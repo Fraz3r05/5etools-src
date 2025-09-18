@@ -3,6 +3,8 @@ export const PROPS_FOUNDRY_DATA_INLINE = [
 
 	"foundrySystem",
 
+	"foundryActivities",
+
 	"foundryFlags",
 
 	"foundryEffects",
@@ -14,6 +16,8 @@ export const PROPS_FOUNDRY_DATA_INLINE = [
 	"foundryPrototypeToken",
 	"foundryTokenSubjectHref",
 	"foundryTokenSubjectScale",
+
+	"_foundryMerge",
 
 	"foundryMigrationVersion",
 ];

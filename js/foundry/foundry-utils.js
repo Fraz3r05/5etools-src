@@ -7,35 +7,40 @@ export class UtilsFoundryItem {
 	static _TYPE_LOOT = "loot";
 
 	static _ITEM_EQUIPMENT_NAME_RES = [
-		"amulet of",
 		"badge of",
 		"band of",
-		"belt of",
-		"boots of",
-		"bracelet of",
-		"bracer of",
-		"bracers of",
-		"brooch of",
-		"cape of",
-		"circlet of",
-		"clothes of",
-		"crown of",
 		"eyes of",
-		"gauntlets of",
-		"gloves of",
-		"goggles of",
-		"hat of",
-		"headband of",
 		"helm of",
 		"mantle of",
 		"mask of",
-		"necklace of",
-		"periapt of",
-		"ring of",
-		"rings of",
-		"robe of",
-		"slippers of",
+		"rings? of",
+
+		"amulet",
+		"belt",
+		"boots",
+		"bracelet",
+		"bracers?",
+		"brooch",
+		"cape",
+		"circlet",
+		"cloth(?:es|ing)",
+		"crown",
+		"gauntlets?",
+		"gloves?",
+		"goggles",
+		"hat",
+		"headband",
+		"necklace",
+		"periapt",
+		"robe",
+		"slippers?",
 		"signet",
+
+		"bell",
+		"kit",
+		"pen",
+		"costume",
+		"tinderbox",
 	].map(it => new RegExp(`\\b${it}\\b`, "i"));
 
 	static getFoundryItemType (item) {
@@ -106,6 +111,9 @@ export class UtilsFoundryItem {
 		if (this._ITEM_EQUIPMENT_NAME_RES.some(it => it.test(item.name))) return this._TYPE_EQUIPMENT;
 
 		if (item.miscTags?.includes("CNS")) return this._TYPE_CONSUMABLE;
+
+		// Classify light-producing items as "equipment", which can be equipped
+		if (item.light?.length) return this._TYPE_EQUIPMENT;
 
 		// Treat everything else as loot
 		return this._TYPE_LOOT;

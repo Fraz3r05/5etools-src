@@ -1,7 +1,7 @@
 import {ActionTag, DiceConvert, SenseTag, SkillTag, TagCondition, TaggerUtils} from "./converterutils-tags.js";
 import {VetoolsConfig} from "../utils-config/utils-config-config.js";
 import {ConverterTaggerInitializable} from "./converterutils-taggerbase.js";
-import {SITE_STYLE__ONE} from "../consts.js";
+import {SITE_STYLE__CLASSIC, SITE_STYLE__ONE} from "../consts.js";
 
 const LAST_KEY_ALLOWLIST = new Set([
 	"entries",
@@ -59,6 +59,7 @@ export class TagJsons {
 							obj = ActionTag.tryRunStrictCapsWords(obj, {styleHint});
 							obj = TableTag.tryRun(obj, {styleHint});
 							obj = TrapTag.tryRun(obj, {styleHint});
+							obj = HazardTag.tryRunStrictCapsWords(obj, {styleHint});
 							obj = HazardTag.tryRun(obj, {styleHint});
 							obj = ChanceTag.tryRun(obj, {styleHint});
 							obj = QuickrefTag.tryRun(obj, {styleHint});
@@ -263,8 +264,13 @@ export class SpellTag extends ConverterTaggerInitializable {
 					);
 					return ptrStack._
 						.replace(/{@spell (Resistance)\|XPHB}( to)/g, "$1$2")
+						.replace(/(bypasses ){@spell (Resistance)\|XPHB}/g, "$1$2")
+
 						.replace(/{@spell (Darkvision)\|XPHB}( can't| \d+ (?:ft\.|feet))/g, "$1$2")
+
+						.replace(/(Dim Light or ){@spell (Darkness)\|XPHB}/g, "$1$2")
 						.replace(/(magical ){@spell (Darkness)\|XPHB}/g, "$1$2")
+
 						.replace(/{@spell (Fly)\|XPHB}( \d+ (?:ft\.|feet))/g, "$1$2")
 					;
 				},
@@ -273,14 +279,32 @@ export class SpellTag extends ConverterTaggerInitializable {
 	}
 
 	static _fnTagStrict ({strMod, styleHint, blocklistNames}) {
-		return strMod
-			.replace(this._SPELL_NAME_REGEX_STRICT, (...m) => {
-				const spellMeta = this._getSpellMeta({name: m[1], styleHint});
-				if (!spellMeta) return m[0];
-				if (blocklistNames?.isBlocked(spellMeta.name)) return m[0];
-				return `{@spell ${m[1]}|${spellMeta.source}}`;
+		const mBase = strMod.match(this._SPELL_NAME_REGEX_STRICT);
+		if (mBase?.length) {
+			const [strMatch] = mBase;
+			const spellMeta = this._getSpellMeta({name: strMatch, styleHint});
+			if (!spellMeta) return strMatch;
+			if (blocklistNames?.isBlocked(spellMeta.name)) return strMatch;
+			return `{@spell ${strMatch}|${spellMeta.source}}`;
+		}
+
+		// Split title-case runs on lowercase conjunctions/etc., as we may have e.g.:
+		//   - "Fireball or Counterspell"
+		//   - "replace one Fireball with Hold Monster" (Pit Fiend; XMM)
+		const pts = this._getCapsWordConjunctionTokens(strMod);
+		if (pts.length === 1) return strMod;
+
+		return pts
+			.map(pt => {
+				return pt
+					.replace(this._SPELL_NAME_REGEX_STRICT, (...m) => {
+						const spellMeta = this._getSpellMeta({name: m[1], styleHint});
+						if (!spellMeta) return m[0];
+						if (blocklistNames?.isBlocked(spellMeta.name)) return m[0];
+						return `{@spell ${m[1]}|${spellMeta.source}}`;
+					});
 			})
-		;
+			.join(" ");
 	}
 }
 
@@ -811,6 +835,40 @@ export class HazardTag extends ConverterTaggerInitializable {
 			})
 		;
 	}
+
+	static _tryRunStrictCapsWords (ent, {styleHint = null} = {}) {
+		if (styleHint === "classic") return ent;
+
+		const walker = MiscUtil.getWalker({keyBlocklist: MiscUtil.GENERIC_WALKER_ENTRIES_KEY_BLOCKLIST});
+		return walker.walk(
+			ent,
+			{
+				string: (str) => {
+					const ptrStack = {_: ""};
+
+					TaggerUtils.walkerStringHandlerStrictCapsWords(
+						["@hazard"],
+						ptrStack,
+						str,
+						{
+							fnTag: strMod => this._fnTagStrict_one(strMod),
+						},
+					);
+
+					return ptrStack._
+						.replace(/(?<prefix>\bstarts )burning\b/g, (...m) => {
+							return `${m.at(-1).prefix}{@hazard burning|XPHB}`;
+						});
+				},
+			},
+		);
+	}
+
+	static _fnTagStrict_one (strMod) {
+		return strMod
+			.replace(this._RE_BASIC_XPHB, (...m) => `{@hazard ${m.at(-1).name}|${Parser.SRC_XPHB}}`)
+		;
+	}
 }
 
 export class CreatureTag {
@@ -983,7 +1041,9 @@ export class CoreRuleTag extends ConverterTaggerInitializable {
 		this._RE_BASIC_XPHB = new RegExp(`\\b(?<ruleName>${(Object.keys(this._LOOKUP_XPHB).join("|"))})\\b`, "g");
 	}
 
-	static _tryRun (it) {
+	static _tryRun (it, {styleHint = null} = {}) {
+		if (styleHint === SITE_STYLE__CLASSIC) return it;
+
 		return TagJsons.WALKER.walk(
 			it,
 			{
@@ -1000,7 +1060,7 @@ export class CoreRuleTag extends ConverterTaggerInitializable {
 						},
 					);
 					return ptrStack._
-						.replace(/{@dice D20} Test(?<plural>s?)/g, (...m) => `{@variantrule D20 Test|XPHB${m.at(-1).plural ? `|D20 Tests` : ""}}`)
+						.replace(/(?<!{@variantrule )(?:{@dice )?D20(?:})? Test(?<plural>s?)/g, (...m) => `{@variantrule D20 Test|XPHB${m.at(-1).plural ? `|D20 Tests` : ""}}`)
 					;
 				},
 			},

@@ -1334,7 +1334,7 @@ class TimeTrackerRoot_Clock_Weather extends TimeTrackerComponent {
 			if (ixCur) {
 				const speedClass = ixCur >= 5 ? "fas" : ixCur >= 3 ? "far" : "fal";
 				$btnWindDirection.html(`<div class="${speedClass} fa-arrow-up" style="transform: rotate(${this._state.windDirection}deg);"></div>`);
-			} else $btnWindDirection.html(`<div class="fal fa-ellipsis-h"></div>`);
+			} else $btnWindDirection.html(`<div class="fal fa-ellipsis"></div>`);
 		};
 		this._addHookBase("windDirection", hookWindDirection);
 		this._addHookBase("windSpeed", hookWindDirection);
@@ -1480,19 +1480,19 @@ TimeTrackerRoot_Clock_Weather._DEFAULT_STATE = {
 	windSpeed: TimeTrackerRoot_Clock_Weather._WIND_SPEEDS[0],
 };
 TimeTrackerRoot_Clock_Weather._TEMPERATURE_META = [
-	{icon: "fa-temperature-frigid", class: "ve-btn-primary"},
-	{icon: "fa-thermometer-quarter", class: "ve-btn-info"},
-	{icon: "fa-thermometer-half"},
-	{icon: "fa-thermometer-three-quarters", class: "ve-btn-warning"},
-	{icon: "fa-temperature-hot", class: "ve-btn-danger"},
+	{icon: "fa-temperature-snow", class: "ve-btn-primary"},
+	{icon: "fa-temperature-quarter", class: "ve-btn-info"},
+	{icon: "fa-temperature-half"},
+	{icon: "fa-temperature-three-quarters", class: "ve-btn-warning"},
+	{icon: "fa-temperature-sun", class: "ve-btn-danger"},
 ];
 TimeTrackerRoot_Clock_Weather._PRECIPICATION_META = [
 	{icon: "fa-sun", iconNight: "fa-moon"},
 	{icon: "fa-clouds-sun", iconNight: "fa-clouds-moon"},
-	{icon: "fa-fog"},
+	{icon: "fa-cloud-fog"},
 	{icon: "fa-cloud-drizzle"},
 	{icon: "fa-cloud-showers-heavy"},
-	{icon: "fa-thunderstorm"},
+	{icon: "fa-cloud-bolt"},
 	{icon: "fa-cloud-hail"},
 	{icon: "fa-cloud-snow"},
 ];
@@ -3057,7 +3057,7 @@ class TimeTrackerRoot_Settings_Day extends RenderableCollectionTimeTracker {
 		const $btnRemove = $(`<button class="ve-btn ve-btn-xs ve-btn-danger no-shrink" title="Delete Day"><span class="glyphicon glyphicon-trash"></span></button>`)
 			.click(() => this._comp._state.days = this._comp._state.days.filter(it => it !== entity));
 
-		const $wrpRow = $$`<div class="ve-flex my-1 dm-time__row-delete">
+		const $wrpRow = $$`<div class="ve-flex py-1 dm-time__row-delete">
 			${$iptName}
 			${$padDrag}
 			${$btnRemove}
@@ -3092,7 +3092,7 @@ class TimeTrackerRoot_Settings_Month extends RenderableCollectionTimeTracker {
 		const $btnRemove = $(`<button class="ve-btn ve-btn-xs ve-btn-danger no-shrink" title="Delete Month"><span class="glyphicon glyphicon-trash"></span></button>`)
 			.click(() => this._comp._state.months = this._comp._state.months.filter(it => it !== entity));
 
-		const $wrpRow = $$`<div class="ve-flex my-1 dm-time__row-delete">
+		const $wrpRow = $$`<div class="ve-flex py-1 dm-time__row-delete">
 			${$iptName}
 			${$iptDays}
 			${$padDrag}

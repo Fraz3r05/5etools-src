@@ -194,9 +194,11 @@ class ItemsPage extends ListPage {
 			dataProps: ["item"],
 
 			bookViewOptions: {
+				nameSingular: "item",
 				namePlural: "items",
 				pageTitle: "Items Book View",
 				propMarkdown: "item",
+				isSublistItemsCountable: true,
 			},
 
 			tableViewOptions: {
@@ -266,7 +268,6 @@ class ItemsPage extends ListPage {
 							e_({
 								tag: "span",
 								clazz: `ve-col-1 ve-text-center ${Parser.sourceJsonToSourceClassname(item.source)} pl-1 pr-0`,
-								style: Parser.sourceJsonToStylePart(item.source),
 								title: `${Parser.sourceJsonToFull(item.source)}${Renderer.utils.getSourceSubText(item)}`,
 								text: source,
 							}),
@@ -282,7 +283,7 @@ class ItemsPage extends ListPage {
 				{
 					hash,
 					source,
-					page: item.page,
+					...ListItem.getCommonValues(item),
 					type,
 					cost: item.value || 0,
 					weight: Parser.weightValueToNumber(item.weight),
@@ -318,7 +319,6 @@ class ItemsPage extends ListPage {
 							e_({
 								tag: "span",
 								clazz: `ve-col-1 ve-text-center ${Parser.sourceJsonToSourceClassname(item.source)} pr-0`,
-								style: Parser.sourceJsonToStylePart(item.source),
 								title: `${Parser.sourceJsonToFull(item.source)}${Renderer.utils.getSourceSubText(item)}`,
 								text: source,
 							}),
@@ -334,7 +334,7 @@ class ItemsPage extends ListPage {
 				{
 					hash,
 					source,
-					page: item.page,
+					...ListItem.getCommonValues(item),
 					type,
 					rarity: item.rarity,
 					attunement: item._attunementCategory !== VeCt.STR_NO_ATTUNEMENT,
@@ -387,8 +387,8 @@ class ItemsPage extends ListPage {
 			},
 		});
 
-		SortUtil.initBtnSortHandlers($("#filtertools-mundane"), this._mundaneList);
-		SortUtil.initBtnSortHandlers($("#filtertools-magic"), this._magicList);
+		SortUtil.initBtnSortHandlers(es("#filtertools-mundane"), this._mundaneList);
+		SortUtil.initBtnSortHandlers(es("#filtertools-magic"), this._magicList);
 
 		this._mundaneList.nextList = this._magicList;
 		this._magicList.prevList = this._mundaneList;

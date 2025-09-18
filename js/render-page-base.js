@@ -4,11 +4,15 @@ export class RenderPageImplBase {
 	_page;
 	_dataProp;
 
-	$getRendered (ent, opts) {
+	getRendered (ent, opts) {
 		opts ||= {};
 		const renderer = Renderer.get().setFirstSection(true);
 
-		return $(this._getRendered({ent, renderer, opts}));
+		return ee`${this._getRendered({ent, renderer, opts})}`;
+	}
+
+	$getRendered (ent, opts) {
+		return $(this.getRendered(ent, opts));
 	}
 
 	/**
@@ -31,7 +35,7 @@ export class RenderPageImplBase {
 	) {
 		return {
 			htmlPtIsExcluded: this._getCommonHtmlParts_isExcluded({ent, opts}),
-			htmlPtName: this._getCommonHtmlParts_name({ent}),
+			htmlPtName: this._getCommonHtmlParts_name({ent, opts}),
 
 			htmlPtPrerequisites: this._getCommonHtmlParts_prerequisites({ent}),
 

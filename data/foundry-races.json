@@ -6,6 +6,336 @@
 	},
 	"race": [
 		{
+			"name": "Dragonborn (Black)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Blue)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Brass)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Bronze)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Copper)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Gold)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Green)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Red)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (Silver)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dragonborn (White)",
+			"source": "XPHB",
+			"advancement": [
+				{
+					"type": "ScaleValue",
+					"configuration": {
+						"identifier": "breath",
+						"type": "dice",
+						"scale": {
+							"0": {
+								"number": 1,
+								"faces": 10
+							},
+							"5": {
+								"number": 2,
+								"faces": 10
+							},
+							"11": {
+								"number": 3,
+								"faces": 10
+							},
+							"17": {
+								"number": 4,
+								"faces": 10
+							}
+						}
+					},
+					"title": "Breath"
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
 			"name": "Human (Keldon)",
 			"source": "PSD",
 			"entryData": {
@@ -20,6 +350,53 @@
 	],
 	"raceFeature": [
 		{
+			"name": "Adrenaline Rush",
+			"source": "XPHB",
+			"raceName": "Orc",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof",
+				"uses.recovery": [
+					{
+						"period": "sr",
+						"type": "recoverAll"
+					}
+				]
+			},
+			"activities": [
+				{
+					"name": "Adrenaline Rush: Dash",
+					"type": "heal",
+					"activation": {
+						"type": "bonus"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"affects": {
+							"type": "self"
+						}
+					},
+					"healing": {
+						"types": [
+							"temphp"
+						],
+						"scaling": {
+							"number": 1
+						},
+						"bonus": "@prof"
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
 			"name": "Animal Enhancement",
 			"source": "GGR",
 			"raceName": "Simic Hybrid",
@@ -27,15 +404,15 @@
 			"effects": [
 				{
 					"name": "Carapace",
+					"disabled": true,
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.bonus",
+							"key": "system.attributes.ac.bonus",
 							"mode": "ADD",
 							"value": "+ 1"
 						}
-					],
-					"disabled": true
+					]
 				}
 			],
 			"migrationVersion": 3
@@ -51,12 +428,12 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.calc",
+							"key": "system.attributes.ac.calc",
 							"mode": "OVERRIDE",
 							"value": "custom"
 						},
 						{
-							"key": "data.attributes.ac.formula",
+							"key": "system.attributes.ac.formula",
 							"mode": "OVERRIDE",
 							"value": "13 + @abilities.dex.mod"
 						}
@@ -72,25 +449,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -100,25 +487,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -128,25 +525,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -156,25 +563,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -184,25 +601,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -212,25 +639,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -240,25 +677,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -268,25 +715,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -296,25 +753,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -324,25 +791,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -352,25 +829,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -380,25 +867,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -408,25 +905,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -436,25 +943,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -464,25 +981,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -492,25 +1019,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -520,25 +1057,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -548,25 +1095,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -576,25 +1133,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -604,25 +1171,35 @@
 			"raceSource": "EGW",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -632,24 +1209,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -659,24 +1246,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -686,24 +1283,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -713,24 +1320,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -740,24 +1357,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -767,24 +1394,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -794,24 +1431,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -821,24 +1468,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -848,24 +1505,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -875,24 +1542,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -902,24 +1579,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -929,24 +1616,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -956,24 +1653,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -983,24 +1690,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1010,24 +1727,34 @@
 			"raceSource": "FTD",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "special",
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "special"
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1037,25 +1764,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1065,25 +1802,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1093,25 +1840,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1121,25 +1878,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1149,25 +1916,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "30",
-						"target.template.units": "ft",
-						"target.template.type": "line"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "30",
+							"units": "ft",
+							"type": "line"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1177,25 +1954,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1205,25 +1992,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1233,25 +2030,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"dex"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1261,25 +2068,35 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1289,25 +2106,1315 @@
 			"raceSource": "PHB",
 			"system": {
 				"range.units": "self",
-				"duration.units": "instantaneous",
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1,
-						"target.template.size": "15",
-						"target.template.units": "ft",
-						"target.template.type": "cone"
+				"duration.units": "instantaneous"
+			},
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					},
-					{
-						"type": "save",
-						"save.ability": [
+					"target": {
+						"template": {
+							"size": "15",
+							"units": "ft",
+							"type": "cone"
+						}
+					}
+				},
+				{
+					"type": "save",
+					"save": {
+						"ability": [
 							"con"
 						],
-						"save.dc.calculation": "con"
+						"dc": {
+							"calculation": "con"
+						}
 					}
-				]
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Black)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
 			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-black.breath"
+								},
+								"types": [
+									"acid"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-black.breath"
+								},
+								"types": [
+									"acid"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Blue)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-blue.breath"
+								},
+								"types": [
+									"lightning"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-blue.breath"
+								},
+								"types": [
+									"lightning"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Brass)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-brass.breath"
+								},
+								"types": [
+									"fire"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-brass.breath"
+								},
+								"types": [
+									"fire"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Bronze)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-bronze.breath"
+								},
+								"types": [
+									"lightning"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-bronze.breath"
+								},
+								"types": [
+									"lightning"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Copper)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-copper.breath"
+								},
+								"types": [
+									"acid"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-copper.breath"
+								},
+								"types": [
+									"acid"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Gold)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-gold.breath"
+								},
+								"types": [
+									"fire"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-gold.breath"
+								},
+								"types": [
+									"fire"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Green)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-green.breath"
+								},
+								"types": [
+									"poison"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-green.breath"
+								},
+								"types": [
+									"poison"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Red)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-red.breath"
+								},
+								"types": [
+									"fire"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-red.breath"
+								},
+								"types": [
+									"fire"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (Silver)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-silver.breath"
+								},
+								"types": [
+									"cold"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-silver.breath"
+								},
+								"types": [
+									"cold"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Breath Weapon",
+			"source": "XPHB",
+			"raceName": "Dragonborn (White)",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof"
+			},
+			"activities": [
+				{
+					"name": "Breath Weapon (Cone)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "cone",
+							"size": "15"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-white.breath"
+								},
+								"types": [
+									"cold"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				},
+				{
+					"name": "Breath Weapon (Line)",
+					"type": "save",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "line",
+							"size": "30",
+							"width": "5"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@scale.dragonborn-white.breath"
+								},
+								"types": [
+									"cold"
+								]
+							}
+						],
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"dex"
+						],
+						"dc": {
+							"calculation": "con"
+						}
+					}
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Celestial Revelation",
+			"source": "XPHB",
+			"raceName": "Aasimar",
+			"raceSource": "XPHB",
+			"activities": [
+				{
+					"name": "Heavenly Wings",
+					"type": "utility",
+					"img": "systems/dnd5e/icons/svg/trait-damage-immunities.svg",
+					"activation": {
+						"type": "bonus"
+					},
+					"duration": {
+						"units": "minute",
+						"value": "1"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"affects": {
+							"type": "self"
+						}
+					},
+					"effects": [
+						{
+							"foundryId": "celestialRevelat"
+						}
+					]
+				},
+				{
+					"name": "Inner Radiance",
+					"type": "damage",
+					"activation": {
+						"type": "bonus"
+					},
+					"duration": {
+						"units": "minute",
+						"value": "1"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "radius",
+							"size": "10"
+						},
+						"affects": {
+							"type": "creature"
+						}
+					},
+					"damage": {
+						"parts": [
+							{
+								"custom": {
+									"enabled": true,
+									"formula": "@prof"
+								},
+								"types": [
+									"radiant"
+								]
+							}
+						]
+					},
+					"effects": [
+						{
+							"foundryId": "celestialRevela1"
+						}
+					]
+				},
+				{
+					"name": "Necrotic Shroud",
+					"type": "save",
+					"activation": {
+						"type": "bonus"
+					},
+					"duration": {
+						"units": "minute",
+						"value": "1"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"template": {
+							"units": "ft",
+							"type": "radius",
+							"size": "10"
+						},
+						"affects": {
+							"type": "enemy"
+						}
+					},
+					"damage": {
+						"onSave": "half"
+					},
+					"save": {
+						"ability": [
+							"cha"
+						],
+						"dc": {
+							"calculation": "cha"
+						}
+					},
+					"effects": [
+						{
+							"foundryId": "celestialRevela2"
+						}
+					]
+				}
+			],
+			"effects": [
+				{
+					"foundryId": "celestialRevelat",
+					"name": "Heavenly Wings",
+					"duration": {
+						"seconds": 60
+					},
+					"changes": [
+						{
+							"key": "system.attributes.movement.fly",
+							"mode": "UPGRADE",
+							"value": 1
+						}
+					]
+				},
+				{
+					"foundryId": "celestialRevela1",
+					"name": "Searing Radiance",
+					"duration": {
+						"seconds": 60
+					}
+				},
+				{
+					"foundryId": "celestialRevela2",
+					"name": "Necrotic Shroud",
+					"duration": {
+						"seconds": 60
+					},
+					"statuses": [
+						"frightened"
+					]
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Draconic Flight",
+			"source": "XPHB",
+			"raceName": "Dragonborn",
+			"raceSource": "XPHB",
+			"activities": [
+				{
+					"name": "Draconic Flight",
+					"type": "utility",
+					"activation": {
+						"type": "bonus"
+					},
+					"duration": {
+						"units": "minute",
+						"value": "10"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"affects": {
+							"type": "self"
+						}
+					},
+					"effects": [
+						{
+							"foundryId": "draconicFlight"
+						}
+					]
+				}
+			],
+			"effects": [
+				{
+					"foundryId": "draconicFlight",
+					"duration": {
+						"seconds": 600
+					}
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1321,9 +3428,28 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.hp.bonuses.level",
+							"key": "system.attributes.hp.bonuses.level",
 							"mode": "ADD",
 							"value": "+ 1"
+						}
+					]
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Dwarven Toughness",
+			"source": "XPHB",
+			"raceName": "Dwarf",
+			"raceSource": "XPHB",
+			"effects": [
+				{
+					"transfer": true,
+					"changes": [
+						{
+							"key": "system.attributes.hp.bonuses.level",
+							"mode": "ADD",
+							"value": 1
 						}
 					]
 				}
@@ -1341,12 +3467,12 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.calc",
+							"key": "system.attributes.ac.calc",
 							"mode": "OVERRIDE",
 							"value": "custom"
 						},
 						{
-							"key": "data.attributes.ac.formula",
+							"key": "system.attributes.ac.formula",
 							"mode": "OVERRIDE",
 							"value": "11 + @abilities.dex.mod"
 						}
@@ -1392,7 +3518,7 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.init.total",
+							"key": "system.attributes.init.total",
 							"mode": "ADD",
 							"value": "+ @attributes.prof"
 						}
@@ -1406,22 +3532,24 @@
 			"source": "MPMM",
 			"raceName": "Aasimar",
 			"raceSource": "MPMM",
-			"system": {
-				"activities": [
-					{
-						"type": "damage",
-						"damage.parts": [
+			"activities": [
+				{
+					"type": "damage",
+					"damage": {
+						"parts": [
 							{
-								"custom.enabled": true,
-								"custom.formula": "(@attributes.prof)d4",
+								"custom": {
+									"enabled": true,
+									"formula": "(@attributes.prof)d4"
+								},
 								"types": [
 									"healing"
 								]
 							}
 						]
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1429,22 +3557,68 @@
 			"source": "VGM",
 			"raceName": "Aasimar",
 			"raceSource": "VGM",
-			"system": {
-				"activities": [
-					{
-						"type": "damage",
-						"damage.parts": [
+			"activities": [
+				{
+					"type": "damage",
+					"damage": {
+						"parts": [
 							{
-								"custom.enabled": true,
-								"custom.formula": "@details.level",
+								"custom": {
+									"enabled": true,
+									"formula": "@details.level"
+								},
 								"types": [
 									"healing"
 								]
 							}
 						]
 					}
-				]
-			},
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Healing Hands",
+			"source": "XPHB",
+			"raceName": "Aasimar",
+			"raceSource": "XPHB",
+			"activities": [
+				{
+					"type": "heal",
+					"activation": {
+						"type": "action"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"affects": {
+							"count": "1",
+							"type": "creature"
+						}
+					},
+					"range": {
+						"units": "touch"
+					},
+					"healing": {
+						"types": [
+							"healing"
+						],
+						"custom": {
+							"enabled": true,
+							"formula": "(@prof)d4"
+						},
+						"scaling": {
+							"number": 1
+						}
+					}
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1452,15 +3626,15 @@
 			"source": "GGR",
 			"raceName": "Centaur",
 			"raceSource": "GGR",
-			"system": {
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					}
-				]
-			},
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1474,9 +3648,81 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.bonus",
+							"key": "system.attributes.ac.bonus",
 							"mode": "ADD",
 							"value": "+ 1"
+						}
+					]
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Large Form",
+			"source": "XPHB",
+			"raceName": "Goliath",
+			"raceSource": "XPHB",
+			"activities": [
+				{
+					"name": "Enlarge",
+					"type": "utility",
+					"activation": {
+						"type": "bonus"
+					},
+					"duration": {
+						"units": "minute",
+						"value": "10"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"affects": {
+							"type": "self"
+						}
+					},
+					"effects": [
+						{
+							"foundryId": "largeForm"
+						}
+					]
+				}
+			],
+			"effects": [
+				{
+					"foundryId": "largeForm",
+					"duration": {
+						"seconds": 600
+					},
+					"changes": [
+						{
+							"key": "system.attributes.movement.walk",
+							"mode": "ADD",
+							"value": 10
+						}
+					]
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Luck",
+			"source": "XPHB",
+			"raceName": "Halfling",
+			"raceSource": "XPHB",
+			"effects": [
+				{
+					"transfer": true,
+					"changes": [
+						{
+							"key": "flags.dnd5e.halflingLucky",
+							"mode": "OVERRIDE",
+							"value": true
 						}
 					]
 				}
@@ -1494,7 +3740,7 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.bonus",
+							"key": "system.attributes.ac.bonus",
 							"mode": "ADD",
 							"value": "+ 3"
 						}
@@ -1514,7 +3760,7 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.bonus",
+							"key": "system.attributes.ac.bonus",
 							"mode": "ADD",
 							"value": "+ 1"
 						}
@@ -1534,12 +3780,12 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.calc",
+							"key": "system.attributes.ac.calc",
 							"mode": "OVERRIDE",
 							"value": "custom"
 						},
 						{
-							"key": "data.attributes.ac.formula",
+							"key": "system.attributes.ac.formula",
 							"mode": "OVERRIDE",
 							"value": "12 + @abilities.con.mod"
 						}
@@ -1559,12 +3805,12 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.calc",
+							"key": "system.attributes.ac.calc",
 							"mode": "OVERRIDE",
 							"value": "custom"
 						},
 						{
-							"key": "data.attributes.ac.formula",
+							"key": "system.attributes.ac.formula",
 							"mode": "OVERRIDE",
 							"value": "12 + @abilities.dex.mod"
 						}
@@ -1584,12 +3830,12 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.calc",
+							"key": "system.attributes.ac.calc",
 							"mode": "OVERRIDE",
 							"value": "custom"
 						},
 						{
-							"key": "data.attributes.ac.formula",
+							"key": "system.attributes.ac.formula",
 							"mode": "OVERRIDE",
 							"value": "17"
 						}
@@ -1609,14 +3855,33 @@
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.calc",
+							"key": "system.attributes.ac.calc",
 							"mode": "OVERRIDE",
 							"value": "custom"
 						},
 						{
-							"key": "data.attributes.ac.formula",
+							"key": "system.attributes.ac.formula",
 							"mode": "OVERRIDE",
 							"value": "13 + @abilities.dex.mod"
+						}
+					]
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Powerful Build",
+			"source": "XPHB",
+			"raceName": "Goliath",
+			"raceSource": "XPHB",
+			"effects": [
+				{
+					"transfer": true,
+					"changes": [
+						{
+							"key": "flags.dnd5e.powerfulBuild",
+							"mode": "OVERRIDE",
+							"value": true
 						}
 					]
 				}
@@ -1628,15 +3893,54 @@
 			"source": "VGM",
 			"raceName": "Aasimar (Protector)",
 			"raceSource": "VGM",
-			"system": {
-				"activities": [
-					{
-						"type": "utility",
-						"activation.type": "action",
-						"activation.value": 1
+			"activities": [
+				{
+					"type": "utility",
+					"activation": {
+						"type": "action",
+						"value": 1
 					}
-				]
-			},
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Relentless Endurance",
+			"source": "XPHB",
+			"raceName": "Orc",
+			"raceSource": "XPHB",
+			"activities": [
+				{
+					"name": "Relentlessly Endure",
+					"type": "heal",
+					"activation": {
+						"type": "",
+						"condition": "When you are reduced to 0 Hit Points but not killed outright"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"affects": {
+							"type": "self"
+						}
+					},
+					"healing": {
+						"types": [
+							"healing"
+						],
+						"scaling": {
+							"number": 1
+						},
+						"bonus": "1"
+					}
+				}
+			],
 			"migrationVersion": 3
 		},
 		{
@@ -1647,15 +3951,15 @@
 			"effects": [
 				{
 					"name": "Natural Armor",
+					"disabled": true,
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.bonus",
+							"key": "system.attributes.ac.bonus",
 							"mode": "ADD",
 							"value": "+ 4"
 						}
-					],
-					"disabled": true
+					]
 				}
 			],
 			"migrationVersion": 3
@@ -1668,15 +3972,77 @@
 			"effects": [
 				{
 					"name": "Natural Armor",
+					"disabled": true,
 					"transfer": true,
 					"changes": [
 						{
-							"key": "data.attributes.ac.bonus",
+							"key": "system.attributes.ac.bonus",
 							"mode": "ADD",
 							"value": "+ 1"
 						}
-					],
-					"disabled": true
+					]
+				}
+			],
+			"migrationVersion": 3
+		},
+		{
+			"name": "Stonecunning",
+			"source": "XPHB",
+			"raceName": "Dwarf",
+			"raceSource": "XPHB",
+			"system": {
+				"uses.max": "@prof",
+				"uses.recovery": [
+					{
+						"period": "lr",
+						"type": "recoverAll"
+					}
+				]
+			},
+			"activities": [
+				{
+					"name": "Stonecunning",
+					"type": "utility",
+					"activation": {
+						"type": "bonus"
+					},
+					"duration": {
+						"units": "minute",
+						"value": "10"
+					},
+					"consumption": {
+						"targets": [
+							{
+								"type": "itemUses",
+								"value": "1"
+							}
+						]
+					},
+					"target": {
+						"affects": {
+							"type": "self"
+						}
+					},
+					"effects": [
+						{
+							"foundryId": "stonecunning"
+						}
+					]
+				}
+			],
+			"effects": [
+				{
+					"foundryId": "stonecunning",
+					"duration": {
+						"seconds": 600
+					},
+					"changes": [
+						{
+							"key": "system.attributes.senses.tremorsense",
+							"mode": "ADD",
+							"value": 60
+						}
+					]
 				}
 			],
 			"migrationVersion": 3

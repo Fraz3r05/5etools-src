@@ -10,12 +10,12 @@ import {getAllJson} from "./util-json-files.js";
 import {listJsonFiles, writeJsonSync} from "5etools-utils/lib/UtilFs.js";
 import * as ut from "./util.js";
 import {FoundryDataMigrator, UNHANDLED_KEYS} from "../js/foundry/foundry-migrate-data.js";
-
-const isSiteFoundryFile = filename => /\/foundry(?:-[^/]+)?\.json$/.test(filename);
+import {isSiteFoundryFile} from "./util.js";
 
 const program = new Command()
 	.option("--file <file...>", `Input files`)
 	.option("--dir <dir...>", `Input directories`)
+	.option("--prefix-props", `If properties should be prefixed with "foundry". For example, if all properties in all files are of the form "spell" instead of "foundrySpell", this must be used.`)
 ;
 
 program.parse(process.argv);
@@ -39,7 +39,7 @@ async function main () {
 
 	await getAllJson({dirs, files})
 		.pSerialAwaitMap(async ({path, json}) => {
-			const isPrefixProps = isSiteFoundryFile(path);
+			const isPrefixProps = params.prefixProps || isSiteFoundryFile(path);
 
 			const foundryMigrator = new FoundryDataMigrator({json, isPrefixProps});
 

@@ -90,7 +90,7 @@ export class CreatureBuilder extends BuilderBase {
 		delete creature.srd;
 		delete creature.srd52;
 		delete creature.basicRules;
-		delete creature.freeRules2024;
+		delete creature.basicRules2024;
 		delete creature.altArt;
 		delete creature.hasToken;
 		delete creature.uniqueId;
@@ -464,6 +464,7 @@ export class CreatureBuilder extends BuilderBase {
 		this.__$getShortNameInput(cb).appendTo(infoTab.$wrpTab);
 		this._$selSource = this.$getSourceInput(cb).appendTo(infoTab.$wrpTab);
 		BuilderUi.$getStateIptString("Page", cb, this._state, {}, "page").appendTo(infoTab.$wrpTab);
+		this.__$getAlignmentPrefixInput(cb).appendTo(infoTab.$wrpTab);
 		this.__$getAlignmentInput(cb).appendTo(infoTab.$wrpTab);
 		this.__$getCrInput(cb).appendTo(infoTab.$wrpTab);
 		this.__$getProfNoteInput(cb).appendTo(infoTab.$wrpTab);
@@ -914,6 +915,23 @@ export class CreatureBuilder extends BuilderBase {
 		const $stageMatchesName = $$`<label class="ve-flex-v-center"><div class="mr-2">Enabled</div>${$cbFullName}</label>`
 			.toggleVe(initialMode === "1")
 			.appendTo($rowInner);
+
+		return $row;
+	}
+
+	__$getAlignmentPrefixInput (cb) {
+		const [$row, $rowInner] = BuilderUi.getLabelledRowTuple("Alignment Prefix", {title: `An additional prefix to display before alignment, for example "Typically ".`});
+
+		const $ipt = $(`<input class="form-control form-control--minimal input-xs mr-2">`)
+			.val(this._state.alignmentPrefix || "")
+			.change(() => {
+				const val = $ipt.val();
+				if (val) this._state.alignmentPrefix = val;
+				else delete this._state.alignmentPrefix;
+				cb();
+			});
+
+		$$`<div class="ve-flex-v-center">${$ipt}</div>`.appendTo($rowInner);
 
 		return $row;
 	}
@@ -1976,7 +1994,7 @@ export class CreatureBuilder extends BuilderBase {
 		if (this._state.senses && this._state.senses.length) $iptSenses.val(this._state.senses.join(", "));
 
 		const menu = ContextUtil.getMenu(
-			Parser.SENSES
+			Parser.getSenses()
 				.map(({name: sense}) => {
 					return new ContextUtil.Action(
 						sense.uppercaseFirst(),

@@ -31,7 +31,8 @@ class RendererMarkdown {
 
 	static _fnPostProcess (str) {
 		return str
-			.trim()
+			.replace(/^\s+/, "")
+			.replace(/\n+$/, "\n")
 			.replace(/\n\n+/g, "\n\n")
 			.replace(/(>\n>\n)+/g, ">\n");
 	}
@@ -97,7 +98,7 @@ class RendererMarkdown {
 
 		const listDepth = Math.max(meta._typeStack.filter(it => it === "list").length - 1, 0);
 
-		if (entry.name) textStack[0] += `##### ${entry.name}`;
+		if (entry.name) textStack[0] += `##### ${Renderer.stripTags(entry.name)}`;
 		const indentSpaces = "  ".repeat(listDepth);
 		const len = entry.items.length;
 
@@ -117,7 +118,8 @@ class RendererMarkdown {
 				textStack[0] += `${RendererMarkdown._getNextPrefix(options)}${indentSpaces}${item.type === "list" ? "" : `- `}`;
 
 				const cacheDepth = this._adjustDepth(meta, 1);
-				this._recursiveRender(entry.items[i], textStack, meta, {suffix: "\n"});
+				if (item?.rendered?.length) textStack[0] += item.rendered;
+				else this._recursiveRender(item, textStack, meta, {suffix: "\n"});
 				if (textStack[0].slice(-2) === "\n\n") textStack[0] = textStack[0].slice(0, -1);
 				meta.depth = cacheDepth;
 			}
@@ -329,7 +331,7 @@ class RendererMarkdown {
 
 	_renderInset (entry, textStack, meta, options) {
 		textStack[0] += "\n";
-		if (entry.name != null) textStack[0] += `> ##### ${entry.name}\n>\n`;
+		if (entry.name != null) textStack[0] += `> ##### ${Renderer.stripTags(entry.name)}\n>\n`;
 		if (entry.entries) {
 			const len = entry.entries.length;
 			for (let i = 0; i < len; ++i) {
@@ -344,7 +346,7 @@ class RendererMarkdown {
 
 	_renderInsetReadaloud (entry, textStack, meta, options) {
 		textStack[0] += "\n";
-		if (entry.name != null) textStack[0] += `>> ##### ${entry.name}\n>>\n`;
+		if (entry.name != null) textStack[0] += `>> ##### ${Renderer.stripTags(entry.name)}\n>>\n`;
 		if (entry.entries) {
 			const len = entry.entries.length;
 			for (let i = 0; i < len; ++i) {
@@ -359,7 +361,7 @@ class RendererMarkdown {
 
 	_renderVariant (entry, textStack, meta, options) {
 		textStack[0] += "\n";
-		if (entry.name != null) textStack[0] += `> ##### Variant: ${entry.name}\n>\n`;
+		if (entry.name != null) textStack[0] += `> ##### Variant: ${Renderer.stripTags(entry.name)}\n>\n`;
 		if (entry.entries) {
 			const len = entry.entries.length;
 			for (let i = 0; i < len; ++i) {
@@ -374,7 +376,7 @@ class RendererMarkdown {
 	}
 
 	_renderVariantSub (entry, textStack, meta, options) {
-		if (entry.name) textStack[0] += `*${entry.name}.* `;
+		if (entry.name) textStack[0] += `*${Renderer.stripTags(entry.name)}.* `;
 
 		if (entry.entries) {
 			const len = entry.entries.length;
@@ -503,7 +505,7 @@ class RendererMarkdown {
 	// region list items
 	_renderItem (entry, textStack, meta, options) {
 		this._renderPrefix(entry, textStack, meta, options);
-		textStack[0] += `**${this.render(entry.name)}${this._renderItem_isAddPeriod(entry) ? "." : ""}** `;
+		textStack[0] += `**${this.render(entry.name)}${this._renderItemSubtypes_isAddPeriod(entry) ? "." : ""}** `;
 		let addedNewline = false;
 		if (entry.entry) this._recursiveRender(entry.entry, textStack, meta);
 		else if (entry.entries) {
@@ -717,6 +719,11 @@ class RendererMarkdown {
 				else textStack[0] += `*Failure:*`;
 				break;
 			}
+			case "@actSaveFailBy": {
+				const [amount] = Renderer.splitTagByPipe(text);
+				textStack[0] += `*Failure by ${amount} or More:*`;
+				break;
+			}
 			case "@actSaveSuccessOrFail": textStack[0] += `*Failure or Success:*`; break;
 			case "@actTrigger": textStack[0] += `*Trigger:*`; break;
 			case "@actResponse": textStack[0] += `*Response${text.includes("d") ? "\u2014" : ":"}*`; break;
@@ -878,6 +885,7 @@ RendererMarkdown.monster = class {
 				.map(res => `\n>- **${res.name}** ${Renderer.monster.getRenderedResource(res, true)}`)
 				.join("")
 			: "";
+		const initiativePart = styleHint === "classic" ? "" : `\n>- **Initiative** ${Renderer.monster.getInitiativePart(mon, {isPlainText: true})}`;
 		const abilityScorePart = RendererMarkdown.utils.compact.getRenderedAbilityScores(mon, {prefix: ">"});
 		const savePart = mon.save ? `\n>- **Saving Throws** ${Object.keys(mon.save).sort(SortUtil.ascSortAtts).map(it => RendererMarkdown.monster.getSave(it, mon.save[it])).join(", ")}` : "";
 		const skillPart = mon.skill ? `\n>- **Skills** ${RendererMarkdown.monster.getSkillsString(mon)}` : "";
@@ -919,6 +927,7 @@ RendererMarkdown.monster = class {
 
 		const legendaryGroupLairPart = legendaryGroup?.lairActions ? `\n>### Lair Actions\n${RendererMarkdown.monster._getRenderedSection({prop: "lairaction", entries: legendaryGroup.lairActions, depth: -1, meta, prefix: ">"})}` : "";
 		const legendaryGroupRegionalPart = legendaryGroup?.regionalEffects ? `\n>### Regional Effects\n${RendererMarkdown.monster._getRenderedSection({prop: "regionaleffect", entries: legendaryGroup.regionalEffects, depth: -1, meta, prefix: ">"})}` : "";
+		const variantsPart = Renderer.monster.getRenderedVariants(mon, {renderer: RendererMarkdown.get()});
 
 		const footerPart = mon.footer ? `\n${RendererMarkdown.monster._getRenderedSectionEntries({sectionEntries: mon.footer, sectionDepth: 0, meta, prefix: ">"})}` : "";
 
@@ -928,7 +937,7 @@ RendererMarkdown.monster = class {
 >___
 >- **Armor Class** ${acPart}
 >- **Hit Points** ${mon.hp == null ? "\u2014" : Renderer.monster.getRenderedHp(mon.hp, {isPlainText: true})}${resourcePart}
->- **Speed** ${Parser.getSpeedString(mon)}
+>- **Speed** ${Parser.getSpeedString(mon)}${initiativePart}
 >___
 ${abilityScorePart}
 >___${savePart}${skillPart}${toolPart}${damVulnPart}${damResPart}${damImmPart}${condImmPart}${sensePart}${languagePart}
@@ -936,7 +945,7 @@ ${abilityScorePart}
 ${pbPart ? `>- **Proficiency Bonus** ${pbPart}` : ""}
 >___`;
 
-		let breakablePart = `${traitsPart}${actionsPart}${bonusActionsPart}${reactionsPart}${legendaryActionsPart}${mythicActionsPart}${legendaryGroupLairPart}${legendaryGroupRegionalPart}${footerPart}`;
+		let breakablePart = `${traitsPart}${actionsPart}${bonusActionsPart}${reactionsPart}${legendaryActionsPart}${mythicActionsPart}${legendaryGroupLairPart}${legendaryGroupRegionalPart}${variantsPart}${footerPart}`;
 
 		if (VetoolsConfig.get("markdown", "isAddColumnBreaks")) {
 			let charAllowanceFirstCol = 2200 - unbreakablePart.length;
@@ -1042,6 +1051,10 @@ ${pbPart ? `>- **Proficiency Bonus** ${pbPart}` : ""}
 				it.name = `${it.name}.`;
 				it.type = it.type || "item";
 			}
+
+			// Tweak spellcasting entries
+			if (it.rendered) it.rendered = it.rendered.replace(/^\*(\*\*[^*]+\*\*)\*/, "$1");
+
 			return it;
 		});
 
@@ -1054,19 +1067,23 @@ ${pbPart ? `>- **Proficiency Bonus** ${pbPart}` : ""}
 		return renderStack.join("");
 	}
 
-	static getSpellcastingRenderedTraits (meta, mon, displayAsProp = "trait") {
+	static getSpellcastingRenderedTraits (meta, mon, {displayAsProp = "trait"} = {}) {
 		const renderer = RendererMarkdown.get();
 		const out = [];
 		const cacheDepth = meta.depth;
 		meta.depth = 2;
-		(mon.spellcasting || []).filter(it => (it.displayAs || "trait") === displayAsProp).forEach(entry => {
-			entry.type = entry.type || "spellcasting";
-			const renderStack = [""];
-			renderer._recursiveRender(entry, renderStack, meta, {prefix: ">"});
-			const rendered = renderStack.join("");
-			if (!rendered.length) return;
-			out.push({name: entry.name, rendered});
-		});
+		(mon.spellcasting || [])
+			.filter(it => (it.displayAs || "trait") === displayAsProp)
+			.forEach(entry => {
+				const isLegendaryMythic = ["legendary", "mythic"].includes(displayAsProp);
+				entry.type = entry.type || "spellcasting";
+				const renderStack = [""];
+				const prefix = isLegendaryMythic ? undefined : ">";
+				renderer._recursiveRender(entry, renderStack, meta, {prefix});
+				const rendered = renderStack.join("");
+				if (!rendered.length) return;
+				out.push({name: entry.name, rendered});
+			});
 		meta.depth = cacheDepth;
 		return out;
 	}
@@ -1207,6 +1224,18 @@ RendererMarkdown.item = class {
 	}
 };
 
+RendererMarkdown.baseitem = class {
+	static getCompactRenderedString (...args) { return RendererMarkdown.item.getCompactRenderedString(...args); }
+};
+
+RendererMarkdown.magicvariant = class {
+	static getCompactRenderedString (...args) { return RendererMarkdown.item.getCompactRenderedString(...args); }
+};
+
+RendererMarkdown.itemGroup = class {
+	static getCompactRenderedString (...args) { return RendererMarkdown.item.getCompactRenderedString(...args); }
+};
+
 RendererMarkdown.legendaryGroup = class {
 	static getCompactRenderedString (lg, opts = {}) {
 		const meta = opts.meta || {};
@@ -1229,14 +1258,14 @@ RendererMarkdown.table = class {
 		const meta = opts.meta || {};
 
 		const subStack = [""];
-		RendererMarkdown.get().recursiveRender(tbl, subStack, meta, {suffix: "\n"});
+		RendererMarkdown.get().recursiveRender({type: "table", ...tbl}, subStack, meta, {suffix: "\n"});
 		return `\n${subStack.join("").trim()}\n\n`;
 	}
 };
 
 RendererMarkdown.tableGroup = class {
 	static getCompactRenderedString (tbl, opts = {}) {
-		return RendererMarkdown.table.getCompactRenderedString(tbl, opts);
+		return RendererMarkdown.table.getCompactRenderedString({type: "table", ...tbl}, opts);
 	}
 };
 
@@ -2536,6 +2565,15 @@ class MarkdownConverter {
 			const maxWidth = Math.max((tbl.colLabels || []).length, ...tbl.rows.map(it => it.length));
 			tbl.rows.forEach(row => {
 				while (row.length < maxWidth) row.push("");
+			});
+		})();
+
+		(function normalizeRanges () {
+			tbl.rows.forEach(row => {
+				if (!row[0] || typeof row[0] !== "string") return;
+
+				// Collapse "1 - 2" to "1-2"
+				row[0] = row[0].replace(/^(\d+)\s+([-\u2012-\u2014\u2212])\s+(\d+)$/, "$1$2$3");
 			});
 		})();
 

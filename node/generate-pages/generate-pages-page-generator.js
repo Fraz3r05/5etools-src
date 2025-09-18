@@ -134,6 +134,7 @@ export class PageGeneratorListBase extends PageGeneratorGeneric {
 	_styleContentWrapperAdditional;
 	_stylePageContentAdditional;
 	_isPrinterView = false;
+	_isTableView = false;
 
 	_registerPartials () {
 		super._registerPartials();
@@ -195,7 +196,9 @@ export class PageGeneratorListBase extends PageGeneratorGeneric {
 			stylePageContentAdditional: this._stylePageContentAdditional,
 			identPartialListListcontainer: "listListcontainer",
 			identPartialListContentwrapper: "listContentwrapper",
+			identPartialListSublistContainer: "listSublistContainer",
 			isPrinterView: this._isPrinterView,
+			isTableView: this._isTableView,
 		};
 	}
 }
@@ -208,6 +211,9 @@ export class PageGeneratorAdventureBookBase extends PageGeneratorGeneric {
 
 	_scriptsRenderAdditional = [
 		"render-markdown.js",
+	];
+
+	_scriptsModules = [
 		"render-map.js",
 	];
 
@@ -218,8 +224,8 @@ export class PageGeneratorAdventureBookBase extends PageGeneratorGeneric {
 
 			advBookPlaceholder: this._advBookPlaceholder,
 
-			scripts: [
-				...data.scripts || [],
+			scriptsModules: [
+				...data.scriptsModules || [],
 				"bookutils.js",
 				`${this._scriptIdentAdvBook}.js`,
 			],
@@ -242,8 +248,8 @@ export class PageGeneratorAdventuresBooksBase extends PageGeneratorGeneric {
 			searchName: this._searchName,
 			btnsList: this._btnsList,
 
-			scripts: [
-				...data.scripts || [],
+			scriptsModules: [
+				...data.scriptsModules || [],
 				"bookutils.js",
 				"bookslist.js",
 				`${this._scriptIdentAdvsBooks}.js`,

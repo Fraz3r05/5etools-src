@@ -2,7 +2,7 @@
 
 // in deployment, `IS_DEPLOYED = "<version number>";` should be set below.
 globalThis.IS_DEPLOYED = undefined;
-globalThis.VERSION_NUMBER = /* 5ETOOLS_VERSION__OPEN */"2.5.12"/* 5ETOOLS_VERSION__CLOSE */;
+globalThis.VERSION_NUMBER = /* 5ETOOLS_VERSION__OPEN */"2.12.0"/* 5ETOOLS_VERSION__CLOSE */;
 globalThis.DEPLOYED_IMG_ROOT = undefined;
 // for the roll20 script to set
 globalThis.IS_VTT = false;
@@ -26,6 +26,7 @@ globalThis.VeCt = {
 	HASH_SCALED_CLASS_SUMMON: "scaledclasssummon",
 
 	FILTER_BOX_SUB_HASH_SEARCH_PREFIX: "fbsr",
+	FILTER_BOX_SUB_HASH_FLAG_IS_PRESERVE_EXISTING: "fbpe",
 
 	JSON_PRERELEASE_INDEX: `prerelease/index.json`,
 	JSON_BREW_INDEX: `homebrew/index.json`,
@@ -338,33 +339,53 @@ globalThis.StrUtil = class {
 
 	/* -------------------------------------------- */
 
+	// See e.g.:
+	//  - https://www.dmsguild.com/product/267467/DMs-Guild-Creator-Resource--Style-Guide-Resources
+	//    (House Style Guide; Forgotten Realms Style Guide)
 	static _IRREGULAR_PLURAL_WORDS = {
 		"aarakocra": "aarakocra",
 		"cactus": "cacti",
 		"child": "children",
+		"dao": "dao",
 		"die": "dice",
 		"djinni": "djinn",
+		"drow": "drow",
+		"duergar": "duergar",
 		"dwarf": "dwarves",
 		"efreeti": "efreet",
+		"el'tael": "el'tael",
+		"eladrin": "eladrin",
 		"elf": "elves",
 		"erinyes": "erinyes",
 		"fey": "fey",
 		"foot": "feet",
+		"foulspawn": "foulspawn",
+		"genasi": "genasi",
 		"goose": "geese",
 		"incubus": "incubi",
 		"ki": "ki",
+		"kenku": "kenku",
+		"larva": "larvae",
+		"lizardfolk": "lizardfolk",
 		"man": "men",
+		"merfolk": "merfolk",
+		"merrow": "merrow",
 		"mouse": "mice",
 		"oni": "oni",
 		"ox": "oxen",
 		"person": "people",
+		"sahuagin": "sahuagin",
 		"sheep": "sheep",
 		"slaad": "slaadi",
 		"succubus": "succubi",
+		"svirfneblin": "svirfneblin",
+		"tael": "tael",
+		"thri-kreen": "thri-kreen",
 		"tooth": "teeth",
 		"undead": "undead",
 		"wolf": "wolves",
 		"woman": "women",
+		"xorn": "xorn",
 		"yuan-ti": "yuan-ti",
 	};
 
@@ -511,6 +532,7 @@ globalThis.SourceUtil = class {
 		{group: "setting", displayName: "Settings"},
 		{group: "setting-alt", displayName: "Additional Settings"},
 		{group: "supplement-alt", displayName: "Extras"},
+		{group: "organized-play", displayName: "Organized Play"},
 		{group: "prerelease", displayName: "Prerelease"},
 		{group: "homebrew", displayName: "Homebrew"},
 		{group: "screen", displayName: "Screens"},
@@ -824,7 +846,7 @@ class TemplateUtil {
 					const parts2 = [...passed[0]];
 					const args2 = passed.slice(1);
 					parts2[0] = `<div>${parts2[0]}`;
-					parts2.last(`${parts2.last()}</div>`);
+					parts2.last(`${parts2.at(-1)}</div>`);
 
 					const eleParts = parts instanceof jQuery ? parts[0] : parts;
 					const $temp = $$(parts2, ...args2);
@@ -840,7 +862,9 @@ class TemplateUtil {
 					if (arg instanceof Array) return arg.flatMap(argSub => argSub instanceof jQuery ? argSub.get() : argSub);
 					return arg instanceof jQuery ? arg.get() : arg;
 				});
-			return $(ee(partsNxt, ...argsNxt));
+			const ele = ee(partsNxt, ...argsNxt);
+			if (ele?.nodeType === Node.DOCUMENT_FRAGMENT_NODE) return $([...ele.children]);
+			return $(ele);
 		};
 	}
 
@@ -851,15 +875,21 @@ class TemplateUtil {
 		 * Template strings which can contain DOM elements.
 		 * Usage: ee`<div>Press this button: ${ve-btn}</div>`
 		 * or:    ee(ele)`<div>Press this button: ${ve-btn}</div>`
-		 * @return {HTMLElementModified}
+		 * @return {HTMLElementExtended}
 		 */
 		globalThis.ee = (parts, ...args) => {
+			// eslint-disable-next-line vet-jquery/jquery
+			if (parts instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
+			// eslint-disable-next-line vet-jquery/jquery
+			if (args?.some(arg => arg instanceof $)) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 			if (parts instanceof Node) {
 				return (...passed) => {
 					const parts2 = [...passed[0]];
 					const args2 = passed.slice(1);
 					parts2[0] = `<div>${parts2[0]}`;
-					parts2.last(`${parts2.last()}</div>`);
+					parts2.last(`${parts2.at(-1)}</div>`);
 
 					const eleTmp = ee(parts2, ...args2);
 					Array.from(eleTmp.childNodes).forEach(node => parts.appendChild(node));
@@ -888,6 +918,8 @@ class TemplateUtil {
 			eleTmpTemplate.innerHTML = raw.trim();
 			const {content: eleTmp} = eleTmpTemplate;
 
+			if (!eleTmp.children.length) throw new Error(`Failed to create HTML element(s) from "${raw}"!`);
+
 			Array.from(eleTmp.querySelectorAll(`[data-r="true"]`))
 				.forEach((node, i) => node.replaceWith(eles[i]));
 
@@ -897,9 +929,11 @@ class TemplateUtil {
 			// If the caller has passed in a single element, return it
 			if (childNodes.length === 1) return e_({ele: childNodes[0]});
 
-			// If the caller has passed in multiple elements with no wrapper, return an array
-			return childNodes
-				.map(childNode => e_({ele: childNode}));
+			// If the caller has passed in multiple elements with no wrapper, return a fragment
+			const fragment = document.createDocumentFragment();
+			childNodes
+				.forEach(childNode => fragment.appendChild(e_({ele: childNode})));
+			return fragment;
 		};
 	}
 
@@ -946,12 +980,6 @@ globalThis.JqueryUtil = {
 				}
 				tgt.innerHTML = html;
 				return this;
-			},
-
-			blurOnEsc: function () {
-				return this.keydown(evt => {
-					if (evt.which === 27) this.blur(); // escape
-				});
 			},
 
 			hideVe: function () { return this.addClass("ve-hidden"); },
@@ -1084,6 +1112,7 @@ globalThis.JqueryUtil = {
 						e_({
 							tag: "button",
 							clazz: "ve-btn toast__btn-close",
+							title: "Close (CTRL to Close All)",
 							children: [
 								e_({
 									tag: "span",
@@ -1101,8 +1130,8 @@ globalThis.JqueryUtil = {
 				evt.preventDefault();
 				JqueryUtil._doToastCleanup(toastMeta);
 
-				// Close all on SHIFT-click
-				if (!evt.shiftKey) return;
+				// Close all on CTRL-click
+				if (!EventUtil.isCtrlMetaKey(evt)) return;
 				[...JqueryUtil._ACTIVE_TOAST].forEach(toastMeta => JqueryUtil._doToastCleanup(toastMeta));
 			},
 		});
@@ -1158,77 +1187,112 @@ class ElementUtil {
 	]);
 
 	/**
-	 * @typedef {HTMLElement} HTMLElementModified
+	 * @typedef {HTMLElement} HTMLElementExtended
 	 * @extends {HTMLElement}
 	 *
-	 * @property {function(HTMLElement): HTMLElementModified} appends
-	 * @property {function(HTMLElement): HTMLElementModified} appendTo
-	 * @property {function(HTMLElement): HTMLElementModified} prependTo
-	 * @property {function(HTMLElement): HTMLElementModified} insertAfter
+	 * @property {function(string): ?HTMLElementExtended} find
+	 * @property {function(string): Array<HTMLElementExtended>} findAll
+	 * @property {function(string): ?HTMLElementExtended} next
 	 *
-	 * @property {function(string): HTMLElementModified} addClass
-	 * @property {function(string): HTMLElementModified} removeClass
-	 * @property {function(string, ?boolean): HTMLElementModified} toggleClass
+	 * @property {function(HTMLElement|string): HTMLElementExtended} appends
+	 * @property {function(HTMLElement|string): HTMLElementExtended} prepends
+	 * @property {function(HTMLElement): HTMLElementExtended} appendTo
+	 * @property {function(HTMLElement): HTMLElementExtended} prependTo
+	 * @property {function(HTMLElement|string): HTMLElementExtended} aftere
+	 * @property {function(HTMLElement): HTMLElementExtended} insertAfter
 	 *
-	 * @property {function(): HTMLElementModified} showVe
-	 * @property {function(): HTMLElementModified} hideVe
-	 * @property {function(?boolean): HTMLElementModified} toggleVe
+	 * @property {function(string): HTMLElementExtended} addClass
+	 * @property {function(string): HTMLElementExtended} removeClass
+	 * @property {function(string, ?boolean): HTMLElementExtended} toggleClass
+	 * @property {function(string): boolean} hasClass
 	 *
-	 * @property {function(): HTMLElementModified} empty
-	 * @property {function(): HTMLElementModified} detach
+	 * @property {function(): HTMLElementExtended} showVe
+	 * @property {function(): HTMLElementExtended} hideVe
+	 * @property {function(?boolean): HTMLElementExtended} toggleVe
 	 *
-	 * @property {function(string, string): HTMLElementModified} attr
-	 * @property {function(*=, ?object): *} val
+	 * @property {function(): HTMLElementExtended} empty
+	 * @property {function(): HTMLElementExtended} detach
 	 *
-	 * @property {function(?string): (HTMLElementModified|string)} html
-	 * @property {function(?string): (HTMLElementModified|string)} txt
+	 * @property {function(string, string=): HTMLElementExtended} attr
+	 * @property {function(string, *=): HTMLElementExtended} prop
+	 * @property {function(*=): *} val
 	 *
-	 * @property {function(string): HTMLElementModified} tooltip
-	 * @property {function(): HTMLElementModified} disableSpellcheck
+	 * @property {function(string=): (HTMLElementExtended|string)} html
+	 * @property {function(string=): (HTMLElementExtended|string)} txt
 	 *
-	 * @property {function(string, function): HTMLElementModified} onn
-	 * @property {function(function): HTMLElementModified} onClick
-	 * @property {function(function): HTMLElementModified} onContextmenu
-	 * @property {function(function): HTMLElementModified} onChange
-	 * @property {function(function): HTMLElementModified} onKeydown
-	 * @property {function(function): HTMLElementModified} onKeyup
+	 * @property {function(string): HTMLElementExtended} tooltip
+	 * @property {function(): HTMLElementExtended} disableSpellcheck
 	 *
-	 * @property {function(string): HTMLElementModified} first
+	 * @property {function(object): HTMLElementExtended} css
 	 *
-	 * @return {HTMLElementModified}
+	 * @property {function(string, function, object=): HTMLElementExtended} onn
+	 * @property {function(function): HTMLElementExtended} onClick
+	 * @property {function(function): HTMLElementExtended} onContextmenu
+	 * @property {function(function): HTMLElementExtended} onChange
+	 * @property {function(function): HTMLElementExtended} onKeydown
+	 * @property {function(function): HTMLElementExtended} onKeyup
+	 *
+	 * @property {function(string): HTMLElementExtended} trigger
+	 *
+	 * @property {function(string): HTMLElementExtended} first
+	 * @property {function(string): HTMLElementExtended} closeste
+	 * @property {function(string): Array<HTMLElementExtended>} childrene
+	 * @property {function(string): Array<HTMLElementExtended>} siblings
+	 * @property {function(): HTMLElementExtended} parente
+	 *
+	 * @property {function(): number} outerWidthe
+	 * @property {function(): number} outerWidthe
+	 * @property {function(): number} outerHeighte
+	 * @property {function(): number} outerHeighte
+	 *
+	 * @property {function(): HTMLElementExtended} focuse
+	 * @property {function(): HTMLElementExtended} selecte
+	 * @property {function(): HTMLElementExtended} blure
+	 *
+	 * @property {function(?number): HTMLElementExtended} scrollTope
+	 *
+	 * @property {function(string): boolean} is
+	 *
+	 * @return {HTMLElementExtended}
 	 */
-	static getOrModify ({
-		tag,
-		clazz,
-		style,
-		click,
-		contextmenu,
-		change,
-		mousedown,
-		mouseup,
-		mousemove,
-		pointerdown,
-		pointerup,
-		keydown,
-		html,
-		text,
-		txt,
-		ele,
-		children,
-		outer,
+	static getOrModify (opts) {
+		if (opts instanceof Element) opts = {ele: opts};
 
-		id,
-		name,
-		title,
-		val,
-		href,
-		type,
-		tabindex,
-		value,
-		placeholder,
-		attrs,
-		data,
-	}) {
+		const {
+			tag,
+			clazz,
+			style,
+			click,
+			contextmenu,
+			change,
+			mousedown,
+			mouseup,
+			mousemove,
+			pointerdown,
+			pointerup,
+			keydown,
+			html,
+			text,
+			txt,
+			children,
+			outer,
+
+			id,
+			name,
+			title,
+			val,
+			href,
+			type,
+			tabindex,
+			value,
+			placeholder,
+			attrs,
+			data,
+		} = opts;
+		let {
+			ele,
+		} = opts;
+
 		const metaEle = ElementUtil._getOrModify_getEle({
 			ele,
 			outer,
@@ -1272,7 +1336,12 @@ class ElementUtil {
 
 		if (children) for (let i = 0, len = children.length; i < len; ++i) if (children[i] != null) ele.append(children[i]);
 
+		ele.find = ele.find || ElementUtil._find.bind(ele);
+		ele.findAll = ele.findAll || ElementUtil._findAll.bind(ele);
+		ele.next = ele.next || ElementUtil._next.bind(ele);
+		ele.nextAll = ele.nextAll || ElementUtil._nextAll.bind(ele);
 		ele.appends = ele.appends || ElementUtil._appends.bind(ele);
+		ele.prepends = ele.prepends || ElementUtil._prepends.bind(ele);
 		ele.appendTo = ele.appendTo || ElementUtil._appendTo.bind(ele);
 		ele.prependTo = ele.prependTo || ElementUtil._prependTo.bind(ele);
 		ele.aftere = ele.aftere || ElementUtil._aftere.bind(ele);
@@ -1280,26 +1349,40 @@ class ElementUtil {
 		ele.addClass = ele.addClass || ElementUtil._addClass.bind(ele);
 		ele.removeClass = ele.removeClass || ElementUtil._removeClass.bind(ele);
 		ele.toggleClass = ele.toggleClass || ElementUtil._toggleClass.bind(ele);
+		ele.hasClass = ele.hasClass || ElementUtil._hasClass.bind(ele);
 		ele.showVe = ele.showVe || ElementUtil._showVe.bind(ele);
 		ele.hideVe = ele.hideVe || ElementUtil._hideVe.bind(ele);
 		ele.toggleVe = ele.toggleVe || ElementUtil._toggleVe.bind(ele);
 		ele.empty = ele.empty || ElementUtil._empty.bind(ele);
 		ele.detach = ele.detach || ElementUtil._detach.bind(ele);
 		ele.attr = ele.attr || ElementUtil._attr.bind(ele);
+		ele.prop = ele.prop || ElementUtil._prop.bind(ele);
 		ele.val = ele.val || ElementUtil._val.bind(ele);
 		ele.html = ele.html || ElementUtil._html.bind(ele);
 		ele.txt = ele.txt || ElementUtil._txt.bind(ele);
 		ele.tooltip = ele.tooltip || ElementUtil._tooltip.bind(ele);
 		ele.disableSpellcheck = ele.disableSpellcheck || ElementUtil._disableSpellcheck.bind(ele);
+		ele.css = ele.css || ElementUtil._css.bind(ele);
 		ele.onn = ele.onn || ElementUtil._onX.bind(ele);
+		ele.off = ele.off || ElementUtil._offX.bind(ele);
 		ele.onClick = ele.onClick || ElementUtil._onX.bind(ele, "click");
 		ele.onContextmenu = ele.onContextmenu || ElementUtil._onX.bind(ele, "contextmenu");
 		ele.onChange = ele.onChange || ElementUtil._onX.bind(ele, "change");
 		ele.onKeydown = ele.onKeydown || ElementUtil._onX.bind(ele, "keydown");
 		ele.onKeyup = ele.onKeyup || ElementUtil._onX.bind(ele, "keyup");
+		ele.trigger = ele.trigger || ElementUtil._trigger.bind(ele);
 		ele.first = ele.first || ElementUtil._first.bind(ele);
 		ele.closeste = ele.closeste || ElementUtil._closeste.bind(ele);
 		ele.childrene = ele.childrene || ElementUtil._childrene.bind(ele);
+		ele.siblings = ele.siblings || ElementUtil._siblings.bind(ele);
+		ele.parente = ele.parente || ElementUtil._parente.bind(ele);
+		ele.outerWidthe = ele.outerWidthe || ElementUtil._outerWidthe.bind(ele);
+		ele.outerHeighte = ele.outerHeighte || ElementUtil._outerHeighte.bind(ele);
+		ele.focuse = ele.focuse || ElementUtil._focuse.bind(ele);
+		ele.selecte = ele.selecte || ElementUtil._selecte.bind(ele);
+		ele.blure = ele.blure || ElementUtil._blure.bind(ele);
+		ele.scrollTope = ele.scrollTope || ElementUtil._scrollTope.bind(ele);
+		ele.is = ele.is || ElementUtil._is.bind(ele);
 
 		return ele;
 	}
@@ -1323,51 +1406,109 @@ class ElementUtil {
 		throw new Error(`Could not find or create element!`);
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
+	static _find (selector) {
+		const eles = ElementUtil.getBySelectorMulti(selector, this);
+		if (!eles.length) return null;
+		if (eles.length > 1) throw new Error(`Single-select "find" found multiple elements! Consider using "findAll" instead`);
+		return eles[0];
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _findAll (selector) {
+		return ElementUtil.getBySelectorMulti(selector, this);
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _next (selector) {
+		let nxt = this.nextElementSibling;
+		while (nxt && !nxt.matches(selector)) nxt = nxt.nextElementSibling;
+		return nxt ? e_({ele: nxt}) : null;
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _nextAll () {
+		const out = [];
+		let tmp = this;
+		while (tmp.nextElementSibling) {
+			out.push(e_({ele: tmp.nextElementSibling}));
+			tmp = tmp.nextElementSibling;
+		}
+		return out;
+	}
+
+	/** @this {HTMLElementExtended} */
 	static _appends (child) {
 		if (typeof child === "string") child = ee`${child}`;
+
+		// eslint-disable-next-line vet-jquery/jquery
+		if (child instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 		this.appendChild(child);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
+	static _prepends (child) {
+		if (typeof child === "string") child = ee`${child}`;
+
+		// eslint-disable-next-line vet-jquery/jquery
+		if (child instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
+		this.prepend(child);
+		return this;
+	}
+
+	/** @this {HTMLElementExtended} */
 	static _appendTo (parent) {
+		// eslint-disable-next-line vet-jquery/jquery
+		if (parent instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 		parent.appendChild(this);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _prependTo (parent) {
+		// eslint-disable-next-line vet-jquery/jquery
+		if (parent instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 		parent.prepend(this);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _aftere (other) {
+		// eslint-disable-next-line vet-jquery/jquery
+		if (other instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 		if (typeof other === "string") other = ee`${other}`;
 		this.after(other);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _insertAfter (parent) {
+		// eslint-disable-next-line vet-jquery/jquery
+		if (parent instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 		parent.after(this);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _addClass (clazz) {
 		this.classList.add(clazz);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _removeClass (clazz) {
 		this.classList.remove(clazz);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _toggleClass (clazz, isActive) {
 		if (isActive == null) this.classList.toggle(clazz);
 		else if (isActive) this.classList.add(clazz);
@@ -1375,63 +1516,76 @@ class ElementUtil {
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
+	static _hasClass (clazz) {
+		return this.classList.contains(clazz);
+	}
+
+	/** @this {HTMLElementExtended} */
 	static _showVe () {
 		this.classList.remove("ve-hidden");
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _hideVe () {
 		this.classList.add("ve-hidden");
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _toggleVe (isActive) {
 		this.toggleClass("ve-hidden", isActive == null ? isActive : !isActive);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _empty () {
 		this.innerHTML = "";
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _detach () {
 		if (this.parentElement) this.parentElement.removeChild(this);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _attr (name, value) {
 		if (value === undefined) return this.getAttribute(name);
-		this.setAttribute(name, value);
+		if (!value && ElementUtil._ATTRS_NO_FALSY.has(name)) this.removeAttribute(name);
+		else this.setAttribute(name, value);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
+	static _prop (name, value) {
+		if (value === undefined) return this[name];
+		this[name] = value;
+		return this;
+	}
+
+	/** @this {HTMLElementExtended} */
 	static _html (html) {
 		if (html === undefined) return this.innerHTML;
 		this.innerHTML = html;
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _txt (txt) {
 		if (txt === undefined) return this.innerText;
 		this.innerText = txt;
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _tooltip (title) {
 		return this.attr("title", title);
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _disableSpellcheck () {
 		// avoid setting input type to "search" as it visually offsets the contents of the input
 		return this
@@ -1440,78 +1594,171 @@ class ElementUtil {
 			.attr("spellcheck", "false");
 	}
 
-	/** @this {HTMLElementModified} */
-	static _onX (evtName, fn) {
-		this.addEventListener(evtName, fn);
+	/** @this {HTMLElementExtended} */
+	static _css (obj) {
+		Object.entries(obj)
+			.forEach(([k, v]) => this.style[k] = v);
 		return this;
 	}
 
-	/** @this {HTMLElementModified} */
-	static _val (val, {isSetAttribute = false} = {}) {
-		if (val !== undefined) {
-			switch (this.tagName) {
-				case "SELECT": {
-					let selectedIndexNxt = -1;
-					for (let i = 0, len = this.options.length; i < len; ++i) {
-						if (this.options[i]?.value === val) {
-							selectedIndexNxt = i;
-							if (isSetAttribute) this.options[i].setAttribute("selected", "selected");
-							break;
-						}
-					}
-					this.selectedIndex = selectedIndexNxt;
-					return this;
-				}
+	/** @this {HTMLElementExtended} */
+	static _onX (evtName, fn, opts) {
+		if (opts) this.addEventListener(evtName, fn, opts);
+		else this.addEventListener(evtName, fn);
+		return this;
+	}
 
-				default: {
-					this.value = val;
-					return this;
-				}
+	/** @this {HTMLElementExtended} */
+	static _offX (evtName, fn) {
+		this.removeEventListener(evtName, fn);
+		return this;
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _trigger (evtOrEvtName) {
+		const evt = evtOrEvtName instanceof Event ? evtOrEvtName : new Event(evtOrEvtName);
+		this.dispatchEvent(evt);
+		return this;
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _val (...args) {
+		if (!args.length) {
+			switch (this.tagName) {
+				case "SELECT": return this.options[this.selectedIndex]?.value;
+
+				default: return this.value;
 			}
 		}
 
-		switch (this.tagName) {
-			case "SELECT": return this.options[this.selectedIndex]?.value;
+		const [val, {isSetAttribute = false} = {}] = args;
 
-			default: return this.value;
+		switch (this.tagName) {
+			case "SELECT": {
+				let selectedIndexNxt = -1;
+				for (let i = 0, len = this.options.length; i < len; ++i) {
+					if (this.options[i]?.value === val) {
+						selectedIndexNxt = i;
+						if (isSetAttribute) this.options[i].setAttribute("selected", "selected");
+						break;
+					}
+				}
+				this.selectedIndex = selectedIndexNxt;
+				return this;
+			}
+
+			default: {
+				if (val === undefined) this.value = null;
+				else this.value = val;
+				return this;
+			}
 		}
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _first (selector) {
 		const child = this.querySelector(selector);
 		if (!child) return child;
 		return e_({ele: child});
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _closeste (selector) {
 		const sibling = this.closest(selector);
 		if (!sibling) return sibling;
 		return e_({ele: sibling});
 	}
 
-	/** @this {HTMLElementModified} */
+	/** @this {HTMLElementExtended} */
 	static _childrene (selector) {
 		if (!selector) return [...this.children].map(child => e_({ele: child}));
 		return em(selector, this);
 	}
 
+	/** @this {HTMLElementExtended} */
+	static _siblings (selector) {
+		if (!selector) {
+			return [...this.parentNode.children]
+				.filter(ele => ele !== this)
+				.map(ele => e_({ele: ele}));
+		}
+
+		return [...this.parentNode.querySelectorAll(`:scope > ${selector}`)]
+			.filter(ele => ele !== this)
+			.map(ele => e_({ele: ele}));
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _parente (selector) {
+		if (selector) throw new Error(`.parente "select" argument is not supported!`);
+		return this.parentElement ? e_({ele: this.parentElement}) : null;
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _outerWidthe () { return this.getBoundingClientRect().width; }
+
+	/** @this {HTMLElementExtended} */
+	static _outerHeighte () { return this.getBoundingClientRect().height; }
+
+	/** @this {HTMLElementExtended} */
+	static _focuse () {
+		this.focus();
+		return this;
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _selecte () {
+		this.select();
+		return this;
+	}
+
+	/** @this {HTMLElementExtended} */
+	static _blure () {
+		this.blur();
+		return this;
+	}
+
+	/* -------------------------------------------- */
+
+	/** @this {HTMLElementExtended} */
+	static _scrollTope (val) {
+		this.scrollTop = val;
+		return this;
+	}
+
+	/* -------------------------------------------- */
+
+	/** @this {HTMLElementExtended} */
+	static _is (nodeTypeOrEle) {
+		// eslint-disable-next-line vet-jquery/jquery
+		if (nodeTypeOrEle instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
+		if (typeof nodeTypeOrEle === "string") return this.nodeName.toLowerCase() === nodeTypeOrEle.toLowerCase();
+
+		return nodeTypeOrEle === this;
+	}
+
 	/* -------------------------------------------- */
 
 	/**
-	 * @return {?HTMLElementModified}
+	 * @return {?HTMLElementExtended}
 	 */
 	static getBySelector (selector, parent) {
+		// eslint-disable-next-line vet-jquery/jquery
+		if (parent instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 		const ele = (parent || document).querySelector(selector);
 		if (!ele) return null;
 		return e_({ele});
 	}
 
 	/**
-	 * @return {Array<HTMLElementModified>}
+	 * @return {Array<HTMLElementExtended>}
 	 */
 	static getBySelectorMulti (selector, parent) {
+		// eslint-disable-next-line vet-jquery/jquery
+		if (parent instanceof $) throw new Error(`Unhandled jQuery instance!`); // TODO(jquery) migrate
+
 		return [...(parent || document).querySelectorAll(selector)]
 			.map(ele => e_({ele}));
 	}
@@ -1546,14 +1793,64 @@ class ElementUtil {
 		}
 		return parent;
 	}
+
+	static _IFRAME_SANDBOX_ATTRIBUTES = [
+		"allow-forms",
+		"allow-modals",
+		"allow-orientation-lock",
+		"allow-pointer-lock",
+		"allow-popups",
+		"allow-popups-to-escape-sandbox",
+		"allow-presentation",
+		"allow-same-origin",
+		"allow-scripts",
+		"allow-top-navigation-by-user-activation",
+
+		// Prevent top-level navigation
+		// "allow-top-navigation",
+	];
+
+	static getIframeSandboxAttribute ({url, isAllowPdf = false} = {}) {
+		if (!url || !isAllowPdf) return this._getIframeSandboxAttribute();
+
+		// Allow "PDFs" (approximately detected by ".pdf" in the filename; this is not intended
+		//   as a security feature) if explicitly requested. Sandbox attributes otherwise block
+		//   these in e.g. Chrome.
+		// See: https://github.com/whatwg/html/issues/3958
+
+		let parsedUrl;
+		try {
+			parsedUrl = new URL(url);
+		} catch (e) {
+			return this._getIframeSandboxAttribute();
+		}
+
+		if (/\.pdf$/i.test(parsedUrl.pathName)) return this._getIframeSandboxAttribute();
+		return "";
+	}
+
+	static _getIframeSandboxAttribute () {
+		return `sandbox="${this._IFRAME_SANDBOX_ATTRIBUTES.join(" ")}"`;
+	}
 	// endregion
 }
 
 globalThis.ElementUtil = ElementUtil;
 
 if (typeof window !== "undefined") {
+	/**
+	 * @return {HTMLElementExtended}
+	 */
 	window.e_ = ElementUtil.getOrModify.bind(ElementUtil);
+
+	/**
+	 * @return {HTMLElementExtended}
+	 */
 	window.es = ElementUtil.getBySelector.bind(ElementUtil);
+
+	/**
+	 * @return {Array<HTMLElementExtended>}
+	 */
 	window.em = ElementUtil.getBySelectorMulti.bind(ElementUtil);
 }
 
@@ -1700,7 +1997,7 @@ globalThis.MiscUtil = class {
 			object = object[path[i]];
 			if (object == null) return object;
 		}
-		return delete object[path.last()];
+		return delete object[path.at(-1)];
 	}
 
 	/** Delete a prop from a nested object, then all now-empty objects backwards from that point. */
@@ -1713,7 +2010,7 @@ globalThis.MiscUtil = class {
 			stack.push(object);
 			if (object === undefined) return object;
 		}
-		const out = delete object[path.last()];
+		const out = delete object[path.at(-1)];
 
 		for (let i = path.length - 1; i > 0; --i) {
 			if (!Object.keys(stack[i]).length) delete stack[i - 1][path[i - 1]];
@@ -1746,6 +2043,42 @@ globalThis.MiscUtil = class {
 			});
 
 		return obj1;
+	}
+
+	static expand (obj) {
+		if (!obj) return obj;
+		if (Array.isArray(obj)) return obj.map(it => MiscUtil.expand(it));
+		if (typeof obj !== "object") return obj;
+		const out = {};
+		Object.entries(obj)
+			.forEach(([k, v]) => MiscUtil.setComposite(out, k, MiscUtil.expand(v)));
+		return out;
+	}
+
+	static flatten (obj) {
+		if (!obj) return obj;
+		if (Array.isArray(obj)) return obj.map(it => MiscUtil.flatten(it));
+		if (typeof obj !== "object") return obj;
+		if (!Object.keys(obj).length) return obj;
+
+		const out = {};
+		Object.entries(obj)
+			.forEach(([k, v]) => {
+				if (v == null || typeof v !== "object" || !Object.keys(v).length) return out[k] = v;
+				if (Array.isArray(v)) return out[k] = v.map(it => MiscUtil.flatten(it));
+
+				Object.entries(MiscUtil.flatten(v))
+					.forEach(([k2, v2]) => {
+						out[`${k}.${k2}`] = v2;
+					});
+			});
+		return out;
+	}
+
+	static setComposite (obj, path, val) {
+		if (!path) return val;
+		const parts = path.split(".");
+		return MiscUtil.set(obj, ...parts, val);
 	}
 
 	/**
@@ -1796,7 +2129,7 @@ globalThis.MiscUtil = class {
 	/**
 	 * @param hex Original hex color.
 	 * @param [opts] Options object.
-	 * @param [opts.bw] True if the color should be returnes as black/white depending on contrast ratio.
+	 * @param [opts.bw] True if the color should be returned as black/white depending on contrast ratio.
 	 * @param [opts.dark] Color to return if a "dark" color would contrast best.
 	 * @param [opts.light] Color to return if a "light" color would contrast best.
 	 */
@@ -2531,6 +2864,29 @@ globalThis.EventUtil = class {
 
 	static isMiddleMouse (evt) { return evt.button === 1; }
 
+	static getDeltaPixels (evt, {lineHeight = null} = {}) {
+		const {deltaX, deltaY, deltaMode} = evt;
+		return {
+			deltaPixelsX: deltaX ? this._getDeltaPixels({delta: deltaX, deltaMode, lineHeight}) : 0,
+			deltaPixelsY: deltaY ? this._getDeltaPixels({delta: deltaY, deltaMode, lineHeight}) : 0,
+		};
+	}
+
+	static _getDeltaPixels ({delta, deltaMode, lineHeight = null}) {
+		switch (deltaMode) {
+			case WheelEvent.DOM_DELTA_PIXEL: return delta;
+			case WheelEvent.DOM_DELTA_LINE: return delta * (lineHeight ?? this._getInitDeltaPixelsLineHeight());
+			case WheelEvent.DOM_DELTA_PAGE: return delta * window.innerHeight;
+			default: throw new Error(`Unimplemented!`);
+		}
+	}
+
+	static _DELTA_PIXELS_LINE_HEIGHT_DEFAULT = null;
+
+	static _getInitDeltaPixelsLineHeight () {
+		return (this._DELTA_PIXELS_LINE_HEIGHT_DEFAULT ??= Number(window.getComputedStyle(document.body).lineHeight.replace(/px$/, "")));
+	}
+
 	/* -------------------------------------------- */
 
 	// In order of preference/priority.
@@ -2587,32 +2943,32 @@ globalThis.AnimationUtil = class {
 };
 
 // CONTEXT MENUS =======================================================================================================
-globalThis.ContextUtil = {
-	_isInit: false,
-	_menus: [],
+globalThis.ContextUtil = class {
+	static _isInit = false;
+	static _menus = [];
 
-	_init () {
+	static _init () {
 		if (ContextUtil._isInit) return;
 		ContextUtil._isInit = true;
 
 		document.body.addEventListener("click", () => ContextUtil.closeAllMenus());
-	},
+	}
 
-	getMenu (actions) {
+	static getMenu (actions, {menuParent = null} = {}) {
 		ContextUtil._init();
 
-		const menu = new ContextUtil.Menu(actions);
+		const menu = new ContextUtil.Menu(actions, {menuParent});
 		ContextUtil._menus.push(menu);
 		return menu;
-	},
+	}
 
-	deleteMenu (menu) {
+	static deleteMenu (menu) {
 		if (!menu) return;
 
 		menu.remove();
 		const ix = ContextUtil._menus.findIndex(it => it === menu);
 		if (~ix) ContextUtil._menus.splice(ix, 1);
-	},
+	}
 
 	/**
 	 * @param evt
@@ -2620,7 +2976,7 @@ globalThis.ContextUtil = {
 	 * @param {?object} userData
 	 * @return {Promise<*>}
 	 */
-	pOpenMenu (evt, menu, {userData = null} = {}) {
+	static pOpenMenu (evt, menu, {userData = null} = {}) {
 		evt.preventDefault();
 		evt.stopPropagation();
 
@@ -2630,34 +2986,36 @@ globalThis.ContextUtil = {
 		ContextUtil._menus.filter(it => it !== menu).forEach(it => it.close());
 
 		return menu.pOpen(evt, {userData});
-	},
+	}
 
-	closeAllMenus () {
+	static closeAllMenus () {
 		ContextUtil._menus.forEach(menu => menu.close());
-	},
+	}
 
-	Menu: class {
-		constructor (actions) {
+	static Menu = class {
+		constructor (actions, {menuParent = null} = {}) {
 			this._actions = actions;
+			this._menuParent = menuParent;
+
 			this._pResult = null;
 			this.resolveResult_ = null;
 
 			this.userData = null;
 
-			this._$ele = null;
+			this._ele = null;
 			this._metasActions = [];
 
 			this._menusSub = [];
 		}
 
 		remove () {
-			if (!this._$ele) return;
-			this._$ele.remove();
-			this._$ele = null;
+			if (!this._ele) return;
+			this._ele.remove();
+			this._ele = null;
 		}
 
-		width () { return this._$ele ? this._$ele.width() : undefined; }
-		height () { return this._$ele ? this._$ele.height() : undefined; }
+		width () { return this._ele ? this._ele.outerWidthe() : undefined; }
+		height () { return this._ele ? this._ele.outerWidthe() : undefined; }
 
 		pOpen (evt, {userData = null, offsetY = null, boundsX = null} = {}) {
 			evt.stopPropagation();
@@ -2671,55 +3029,59 @@ globalThis.ContextUtil = {
 			});
 			this.userData = userData;
 
-			this._$ele
+			this._ele
 				// Show as transparent/non-clickable first, so we can get an accurate width/height
 				.css({
-					left: 0,
-					top: 0,
-					opacity: 0,
+					left: `0px`,
+					top: `0px`,
+					opacity: `0px`,
 					pointerEvents: "none",
 				})
 				.showVe()
 				// Use the accurate width/height to set the final position, and remove our temp styling
 				.css({
-					left: this._getMenuPosition(evt, "x", {bounds: boundsX}),
-					top: this._getMenuPosition(evt, "y", {offset: offsetY}),
+					left: `${this._getMenuPosition(evt, "x", {bounds: boundsX})}px`,
+					top: `${this._getMenuPosition(evt, "y", {offset: offsetY})}px`,
 					opacity: "",
 					pointerEvents: "",
 				});
 
-			this._metasActions[0].$eleRow.focus();
+			this._metasActions[0].eleRow.focus();
 
 			return this._pResult;
 		}
 
-		close () {
-			if (!this._$ele) return;
-			this._$ele.hideVe();
+		/**
+		 * @param _isSkipSubMenus (Avoid infinite loops)
+		 * @param isSkipParentMenus
+		 */
+		close ({_isSkipSubMenus = false, isSkipParentMenus = false} = {}) {
+			if (this._ele) this._ele.hideVe();
 
-			this.closeSubMenus();
+			if (!_isSkipSubMenus) this.closeSubMenus();
+			if (!isSkipParentMenus) this._closeParentMenus();
 		}
 
 		isOpen () {
-			if (!this._$ele) return false;
-			return !this._$ele.hasClass("ve-hidden");
+			if (!this._ele) return false;
+			return !this._ele.classList.contains("ve-hidden");
 		}
 
 		_initLazy () {
-			if (this._$ele) {
+			if (this._ele) {
 				this._metasActions.forEach(meta => meta.action.update());
 				return;
 			}
 
-			const $elesAction = this._actions.map(it => {
-				if (it == null) return $(`<div class="my-1 w-100 ui-ctx__divider"></div>`);
+			const elesAction = this._actions.map(it => {
+				if (it == null) return ee`<div class="my-1 w-100 ui-ctx__divider"></div>`;
 
 				const rdMeta = it.render({menu: this});
 				this._metasActions.push(rdMeta);
-				return rdMeta.$eleRow;
+				return rdMeta.eleRow;
 			});
 
-			this._$ele = $$`<div class="ve-flex-col ui-ctx__wrp py-2 absolute">${$elesAction}</div>`
+			this._ele = ee`<div class="ve-flex-col ui-ctx__wrp py-2 absolute">${elesAction}</div>`
 				.hideVe()
 				.appendTo(document.body);
 		}
@@ -2732,11 +3094,11 @@ globalThis.ContextUtil = {
 			const posMouse = EventUtil[fnGetEventPos](evt);
 			const szWin = $(window)[fnWindowSize]();
 			const posScroll = $(window)[fnScrollDir]();
-			let position = posMouse + posScroll;
-
-			if (offset) position += offset;
-
+			const posMouseOffset = offset ? posMouse + offset : posMouse;
 			const szMenu = this[fnMenuSize]();
+
+			let position = posMouse + posScroll;
+			position += (offset || 0);
 
 			// region opening menu would violate bounds
 			if (bounds != null) {
@@ -2754,7 +3116,7 @@ globalThis.ContextUtil = {
 			// endregion
 
 			// opening menu would pass the side of the page
-			if (position + szMenu > szWin && szMenu < position) position -= szMenu;
+			if (posMouseOffset + szMenu > szWin && szMenu < posMouseOffset) position -= szMenu;
 
 			return position;
 		}
@@ -2766,9 +3128,14 @@ globalThis.ContextUtil = {
 		closeSubMenus (menuSubExclude = null) {
 			this._menusSub
 				.filter(menuSub => menuSubExclude == null || menuSub !== menuSubExclude)
-				.forEach(menuSub => menuSub.close());
+				.forEach(menuSub => menuSub.close({isSkipParentMenus: true}));
 		}
-	},
+
+		_closeParentMenus () {
+			if (!this._menuParent) return;
+			this._menuParent.close({_isSkipSubMenus: true});
+		}
+	};
 
 	/**
 	 * @param text
@@ -2781,61 +3148,65 @@ globalThis.ContextUtil = {
 	 * @param [opts.textAlt] Text for the alt-action button
 	 * @param [opts.titleAlt] Title for the alt-action button
 	 */
-	Action: function (text, fnAction, opts) {
-		opts = opts || {};
+	static Action = class {
+		constructor (text, fnAction, opts) {
+			opts = opts || {};
 
-		this.text = text;
-		this.fnAction = fnAction;
+			this.text = text;
+			this.fnAction = fnAction;
 
-		this.isDisabled = opts.isDisabled;
-		this.title = opts.title;
-		this.style = opts.style;
+			this.isDisabled = opts.isDisabled;
+			this.title = opts.title;
+			this.style = opts.style;
 
-		this.fnActionAlt = opts.fnActionAlt;
-		this.textAlt = opts.textAlt;
-		this.titleAlt = opts.titleAlt;
+			this.fnActionAlt = opts.fnActionAlt;
+			this.textAlt = opts.textAlt;
+			this.titleAlt = opts.titleAlt;
+		}
 
-		this.render = function ({menu}) {
-			const $btnAction = this._render_$btnAction({menu});
-			const $btnActionAlt = this._render_$btnActionAlt({menu});
+		render ({menu}) {
+			const btnAction = this._render_btnAction({menu});
+			const btnActionAlt = this._render_btnActionAlt({menu});
 
 			return {
 				action: this,
-				$eleRow: $$`<div class="ui-ctx__row ve-flex-v-center ${this.style || ""}">${$btnAction}${$btnActionAlt}</div>`,
-				$eleBtn: $btnAction,
+				eleRow: ee`<div class="ui-ctx__row ve-flex-v-center ${this.style || ""}">${btnAction}${btnActionAlt}</div>`,
+				eleBtn: btnAction,
 			};
-		};
+		}
 
-		this._render_$btnAction = function ({menu}) {
-			const $btnAction = $(`<div class="w-100 min-w-0 ui-ctx__btn py-1 pl-5 ${this.fnActionAlt ? "" : "pr-5"}" ${this.isDisabled ? "disabled" : ""} tabindex="0">${this.text}</div>`)
-				.on("click", async evt => {
-					if (this.isDisabled) return;
+		_render_btnAction ({menu}) {
+			const pOnClick = async (evt) => {
+				if (this.isDisabled) return;
 
+				evt.preventDefault();
+				evt.stopPropagation();
+
+				menu.close();
+
+				const result = await this.fnAction(evt, {userData: menu.userData});
+				if (menu.resolveResult_) menu.resolveResult_(result);
+			};
+
+			const btnAction = ee`<div class="w-100 min-w-0 ui-ctx__btn py-1 pl-5 ${this.fnActionAlt ? "" : "pr-5"}" ${this.isDisabled ? "disabled" : ""} tabindex="0">${this.text}</div>`
+				.onn("click", evt => pOnClick(evt))
+				.onn("mousedown", evt => {
 					evt.preventDefault();
-					evt.stopPropagation();
-
-					menu.close();
-
-					const result = await this.fnAction(evt, {userData: menu.userData});
-					if (menu.resolveResult_) menu.resolveResult_(result);
 				})
-				.on("mousedown", evt => {
-					evt.preventDefault();
-				})
-				.keydown(evt => {
+				.onn("keydown", async evt => {
 					if (evt.key !== "Enter") return;
-					$btnAction.click();
+					await pOnClick(evt);
 				});
-			if (this.title) $btnAction.title(this.title);
+			if (this.title) btnAction.tooltip(this.title);
 
-			return $btnAction;
+			return btnAction;
 		};
 
-		this._render_$btnActionAlt = function ({menu}) {
+		_render_btnActionAlt ({menu}) {
 			if (!this.fnActionAlt) return null;
 
-			const $btnActionAlt = $(`<div class="ui-ctx__btn ml-1 bl-1 py-1 px-4" ${this.isDisabled ? "disabled" : ""}>${this.textAlt ?? `<span class="glyphicon glyphicon-cog"></span>`}</div>`)
-				.on("click", async evt => {
+			const btnActionAlt = ee`<div class="ui-ctx__btn ml-1 bl-1 py-1 px-4" ${this.isDisabled ? "disabled" : ""}>${this.textAlt ?? `<span class="glyphicon glyphicon-cog"></span>`}</div>`
+				.onn("click", async evt => {
 					if (this.isDisabled) return;
 
 					evt.preventDefault();
@@ -2846,51 +3217,55 @@ globalThis.ContextUtil = {
 					const result = await this.fnActionAlt(evt, {userData: menu.userData});
 					if (menu.resolveResult_) menu.resolveResult_(result);
 				})
-				.on("mousedown", evt => {
+				.onn("mousedown", evt => {
 					evt.preventDefault();
 				});
-			if (this.titleAlt) $btnActionAlt.title(this.titleAlt);
+			if (this.titleAlt) btnActionAlt.tooltip(this.titleAlt);
 
-			return $btnActionAlt;
-		};
+			return btnActionAlt;
+		}
 
-		this.update = function () { /* Implement as required */ };
-	},
+		update () { /* Implement as required */ };
+	};
 
-	ActionLink: function (text, fnHref, opts) {
-		ContextUtil.Action.call(this, text, null, opts);
+	static ActionLink = class extends this.Action {
+		constructor (text, fnHref, opts) {
+			super(text, null, opts);
 
-		this.fnHref = fnHref;
-		this._$btnAction = null;
+			this.fnHref = fnHref;
+			this._btnAction = null;
+		}
 
-		this._render_$btnAction = function () {
-			this._$btnAction = $(`<a href="${this.fnHref()}" class="w-100 min-w-0 ui-ctx__btn py-1 pl-5 ${this.fnActionAlt ? "" : "pr-5"}" ${this.isDisabled ? "disabled" : ""} tabindex="0">${this.text}</a>`);
-			if (this.title) this._$btnAction.title(this.title);
+		_render_btnAction () {
+			this._btnAction = ee`<a href="${this.fnHref()}" class="w-100 min-w-0 ui-ctx__btn py-1 pl-5 ${this.fnActionAlt ? "" : "pr-5"}" ${this.isDisabled ? "disabled" : ""} tabindex="0">${this.text}</a>`;
+			if (this.title) this._btnAction.tooltip(this.title);
 
-			return this._$btnAction;
-		};
+			return this._btnAction;
+		}
 
-		this.update = function () {
-			this._$btnAction.attr("href", this.fnHref());
-		};
-	},
+		update () {
+			this._btnAction.attr("href", this.fnHref());
+		}
+	};
 
-	ActionSelect: function (
-		{
-			values,
-			fnOnChange = null,
-			fnGetDisplayValue = null,
-		},
-	) {
-		this._values = values;
-		this._fnOnChange = fnOnChange;
-		this._fnGetDisplayValue = fnGetDisplayValue;
+	static ActionSelect = class {
+		constructor (
+			{
+				values,
+				fnOnChange = null,
+				fnGetDisplayValue = null,
+			},
+		) {
+			this._values = values;
+			this._fnOnChange = fnOnChange;
+			this._fnGetDisplayValue = fnGetDisplayValue;
 
-		this._sel = null;
+			this._sel = null;
 
-		this._ixInitial = null;
+			this._ixInitial = null;
+		}
 
-		this.render = function ({menu}) {
+		render ({menu}) {
 			this._sel = this._render_sel({menu});
 
 			if (this._ixInitial != null) {
@@ -2900,11 +3275,11 @@ globalThis.ContextUtil = {
 
 			return {
 				action: this,
-				$eleRow: $$`<div class="ui-ctx__row ve-flex-v-center">${this._sel}</div>`,
+				eleRow: ee`<div class="ui-ctx__row ve-flex-v-center">${this._sel}</div>`,
 			};
-		};
+		}
 
-		this._render_sel = function ({menu}) {
+		_render_sel ({menu}) {
 			const sel = e_({
 				tag: "select",
 				clazz: "w-100 min-w-0 mx-5 py-1",
@@ -2937,38 +3312,38 @@ globalThis.ContextUtil = {
 			});
 
 			return sel;
-		};
+		}
 
-		this.setValue = function (val) {
+		setValue (val) {
 			const ix = this._values.indexOf(val);
 			if (!this._sel) return this._ixInitial = ix;
 			this._sel.val(`${ix}`);
-		};
+		}
 
-		this.update = function () { /* Implement as required */ };
-	},
+		update () { /* Implement as required */ }
+	};
 
-	ActionSubMenu: class {
+	static ActionSubMenu = class {
 		constructor (name, actions) {
 			this._name = name;
 			this._actions = actions;
 		}
 
 		render ({menu}) {
-			const menuSub = ContextUtil.getMenu(this._actions);
+			const menuSub = ContextUtil.getMenu(this._actions, {menuParent: menu});
 			menu.addSubMenu(menuSub);
 
-			const $eleRow = $$`<div class="ui-ctx__btn py-1 px-5 split-v-center">
+			const eleRow = ee`<div class="ui-ctx__btn py-1 px-5 split-v-center">
 				<div>${this._name}</div>
 				<div class="pl-4"><span class="caret caret--right"></span></div>
 			</div>`
-				.on("click", async evt => {
+				.onn("click", async evt => {
 					evt.stopPropagation();
-					if (menuSub.isOpen()) return menuSub.close();
+					if (menuSub.isOpen()) return menuSub.close({isSkipParentMenus: true});
 
 					menu.closeSubMenus(menuSub);
 
-					const bcr = $eleRow[0].getBoundingClientRect();
+					const bcr = eleRow.getBoundingClientRect();
 
 					await menuSub.pOpen(
 						evt,
@@ -2980,21 +3355,19 @@ globalThis.ContextUtil = {
 							},
 						},
 					);
-
-					menu.close();
 				})
-				.on("mousedown", evt => {
+				.onn("mousedown", evt => {
 					evt.preventDefault();
 				});
 
 			return {
 				action: this,
-				$eleRow,
+				eleRow,
 			};
 		}
 
 		update () { /* Implement as required */ }
-	},
+	};
 };
 
 // LIST AND SEARCH =====================================================================================================
@@ -3181,7 +3554,14 @@ globalThis.UrlUtil = {
 
 	pageToDisplayPage (page) { return UrlUtil.PG_TO_NAME[page] || (page || "").replace(/\.html$/, ""); },
 
-	getFilename (url) { return url.slice(url.lastIndexOf("/") + 1); },
+	getFilename (url) {
+		const out = url.slice(url.lastIndexOf("/") + 1);
+		try {
+			return decodeURIComponent(out);
+		} catch (e) {
+			return out;
+		}
+	},
 
 	isFullUrl (url) { return url && /^.*?:\/\//.test(url); },
 
@@ -3290,7 +3670,17 @@ globalThis.UrlUtil = {
 		},
 	},
 
-	getStateKeySubclass (sc) { return Parser.stringToSlug(`sub ${sc.shortName || sc.name} ${sc.source}`); },
+	getStateKeySubclass (sc) {
+		return UrlUtil.encodeArrayForHash(["sub", sc.shortName || sc.name, sc.source]);
+	},
+
+	unpackStateKeySubclass (str) {
+		const [, shortName, source] = UrlUtil.decodeHash(str);
+		return {
+			shortName,
+			source,
+		};
+	},
 
 	/**
 	 * @param opts Options object.
@@ -3392,7 +3782,7 @@ UrlUtil.URL_TO_HASH_BUILDER = {};
 UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_BESTIARY] = UrlUtil.URL_TO_HASH_GENERIC;
 UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_SPELLS] = UrlUtil.URL_TO_HASH_GENERIC;
 UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_BACKGROUNDS] = UrlUtil.URL_TO_HASH_GENERIC;
-UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_ITEMS] = UrlUtil.URL_TO_HASH_GENERIC;
+UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_ITEMS] = it => UrlUtil.encodeArrayForHash(it.name, SourceUtil.getEntitySource(it));
 UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_CLASSES] = UrlUtil.URL_TO_HASH_GENERIC;
 UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_CONDITIONS_DISEASES] = UrlUtil.URL_TO_HASH_GENERIC;
 UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_FEATS] = UrlUtil.URL_TO_HASH_GENERIC;
@@ -3568,7 +3958,7 @@ UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_CONDITION] = UrlUtil.PG_CONDITIONS_DISEASES;
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_FEAT] = UrlUtil.PG_FEATS;
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_ELDRITCH_INVOCATION] = UrlUtil.PG_OPT_FEATURES;
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_METAMAGIC] = UrlUtil.PG_OPT_FEATURES;
-UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_MANEUVER_BATTLEMASTER] = UrlUtil.PG_OPT_FEATURES;
+UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_MANEUVER_BATTLE_MASTER] = UrlUtil.PG_OPT_FEATURES;
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_MANEUVER_CAVALIER] = UrlUtil.PG_OPT_FEATURES;
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_ARCANE_SHOT] = UrlUtil.PG_OPT_FEATURES;
 UrlUtil.CAT_TO_PAGE[Parser.CAT_ID_OPTIONAL_FEATURE_OTHER] = UrlUtil.PG_OPT_FEATURES;
@@ -3665,13 +4055,26 @@ UrlUtil.PAGE_TO_PROPS = {};
 UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_SPELLS] = ["spell"];
 UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_ITEMS] = ["item", "itemGroup", "itemType", "itemEntry", "itemProperty", "itemTypeAdditionalEntries", "itemMastery", "baseitem", "magicvariant"];
 UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_RACES] = ["race", "subrace"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_ACTIONS] = ["action"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_BACKGROUNDS] = ["background"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_BESTIARY] = ["monster"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_CLASSES] = ["class", "subclass", "classFeature", "subclassFeature"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_CONDITIONS_DISEASES] = ["condition", "disease", "status"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_CULTS_BOONS] = ["cult", "boon"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_FEATS] = ["feat"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_LANGUAGES] = ["language"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_OBJECTS] = ["object"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_OPT_FEATURES] = ["optionalfeature"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_REWARDS] = ["reward"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_TRAPS_HAZARDS] = ["trap", "hazard"];
+UrlUtil.PAGE_TO_PROPS[UrlUtil.PG_VARIANTRULES] = ["variantrule"];
 
 UrlUtil.PROP_TO_PAGE = {};
 UrlUtil.PROP_TO_PAGE["spell"] = UrlUtil.PG_SPELLS;
 UrlUtil.PROP_TO_PAGE["item"] = UrlUtil.PG_ITEMS;
 UrlUtil.PROP_TO_PAGE["baseitem"] = UrlUtil.PG_ITEMS;
 
-if (!IS_DEPLOYED && !IS_VTT && typeof window !== "undefined") {
+if (!IS_DEPLOYED && !globalThis.IS_VTT && typeof window !== "undefined") {
 	// for local testing, hotkey to get a link to the current page on the main site
 	window.addEventListener("keypress", (e) => {
 		if (EventUtil.noModifierKeys(e) && typeof d20 === "undefined") {
@@ -3719,7 +4122,7 @@ globalThis.SortUtil = {
 
 		function popEndNumber (str) {
 			const spl = str.split(" ");
-			return spl.last().isNumeric() ? [spl.slice(0, -1).join(" "), Number(spl.last().replace(Parser._numberCleanRegexp, ""))] : [spl.join(" "), 0];
+			return spl.at(-1).isNumeric() ? [spl.slice(0, -1).join(" "), Number(spl.at(-1).replace(Parser._numberCleanRegexp, ""))] : [spl.join(" "), 0];
 		}
 
 		const [aStr, aNum] = popEndNumber(a.item || a);
@@ -3832,10 +4235,14 @@ globalThis.SortUtil = {
 
 	ascSortSize (a, b) { return Parser.SIZE_ABVS.indexOf(a) - Parser.SIZE_ABVS.indexOf(b); },
 
-	initBtnSortHandlers ($wrpBtnsSort, list) {
+	initBtnSortHandlers (wrpBtnsSort, list) {
+		if (wrpBtnsSort instanceof $) { // TODO(jquery) migrate
+			wrpBtnsSort = wrpBtnsSort[0];
+		}
+
 		let dispCaretInitial = null;
 
-		const dispCarets = [...$wrpBtnsSort[0].querySelectorAll(`[data-sort]`)]
+		const dispCarets = [...wrpBtnsSort.querySelectorAll(`[data-sort]`)]
 			.map(btnSort => {
 				const dispCaret = e_({
 					tag: "span",
@@ -4110,19 +4517,87 @@ class _DataUtilBrewHelper {
 	}
 }
 
-globalThis.DataUtil = {
-	_loading: {},
-	_loaded: {},
-	_merging: {},
-	_merged: {},
+globalThis.DataUtil = class {
+	static _loading = {};
+	static _loaded = {};
+	static _merging = {};
+	static _merged = {};
 
-	async _pLoad ({url, id, isBustCache = false}) {
-		if (DataUtil._loading[id] && !isBustCache) {
-			await DataUtil._loading[id];
-			return DataUtil._loaded[id];
+	static _RequestLimiter = class {
+		constructor ({urlPrefix, timeoutMs}) {
+			this._urlPrefix = urlPrefix;
+			this._timeoutMs = timeoutMs;
+			this._limitedUntil = null;
 		}
 
-		DataUtil._loading[id] = new Promise((resolve, reject) => {
+		isMatch (url) { return url?.startsWith(this._urlPrefix); }
+
+		isLimited (url) {
+			if (this._limitedUntil == null) return false;
+			return this.isMatch(url) && Date.now() <= this._limitedUntil;
+		}
+
+		addFailure () { this._limitedUntil = Date.now() + this._timeoutMs; }
+	};
+
+	static REQUEST_LIMITER_GITHUB_RAW = new this._RequestLimiter({
+		urlPrefix: "https://raw.githubusercontent.com/",
+		timeoutMs: 15 * 60 * 1000, // 15 mins
+	});
+
+	static _REQUEST_LIMITERS = [
+		this.REQUEST_LIMITER_GITHUB_RAW,
+	];
+
+	static _OptionalJsonResponse = class {
+		/**
+		 * @param url
+		 * @param status
+		 * @param {?*} json
+		 * @param {?string} error
+		 */
+		constructor ({url, status, json = null, error = null}) {
+			if (json == null && error == null) throw new Error(`One of "json" or "error" must be specified!`);
+
+			this.url = url;
+			this.status = status;
+			this.json = json;
+			this.error = error;
+		}
+
+		static _RE_JSDELIVR = /https:\/\/raw\.githubusercontent\.com\/(?<user>[a-zA-Z0-9-]+)\/(?<repo>[A-Za-z0-9_.-]+)\/(?<branchAndPath>.*)$/;
+
+		isJsdelivrRetry () { return this.status === 429 && this.constructor._RE_JSDELIVR.test(this.url); }
+
+		isGitHackRetry () { return this.status === 429 && this.url.startsWith("https://raw.githubusercontent.com/"); }
+
+		getJsDelivrUrl () {
+			const m = this.constructor._RE_JSDELIVR.exec(this.url);
+			if (!m) throw new Error(`Failed to convert GitHub URL to jsDelivr URL!`); // Should never occur
+			const {user, repo, branchAndPath} = m.groups;
+			return `https://cdn.jsdelivr.net/gh/${user}/${repo}@${branchAndPath}`;
+		}
+
+		getGithackUrl () {
+			const out = this.url.replace(/^https:\/\/raw\.githubusercontent\.com\//, "https://raw.githack.com/");
+			if (out === this.url) throw new Error(`Failed to convert GitHub URL to GitHack URL!`); // Should never occur
+			return out;
+		}
+	};
+
+	static async _pLoad_pGetJson_pGetOptionalJson ({url}) {
+		for (const limiter of this._REQUEST_LIMITERS) {
+			if (!limiter.isLimited(url)) continue;
+			return new this._OptionalJsonResponse({
+				url,
+				status: 429,
+				error: `Request was limited`,
+			});
+		}
+
+		return new Promise(resolve => {
+			// Testing (as of 2025-05-18) via local checkout of https://github.com/arendjr/fetch-vs-xhr-perf shows
+			//  `XMLHttpRequest` to be faster than `fetch` on both Chrome (136.0.7103.93) and Firefox (138.0.4)
 			const request = new XMLHttpRequest();
 
 			request.open("GET", url, true);
@@ -4136,35 +4611,123 @@ globalThis.DataUtil = {
 			 */
 			request.overrideMimeType("application/json");
 
-			request.onload = function () {
-				try {
-					DataUtil._loaded[id] = JSON.parse(this.response);
-					resolve();
-				} catch (e) {
-					reject(new Error(`Could not parse JSON from ${url}: ${e.message}`));
-				}
-			};
-			request.onerror = (e) => {
-				const ptDetail = [
+			const getRequestDetails = () => {
+				return [
 					"status",
 					"statusText",
 					"readyState",
 					"response",
 					"responseType",
 				]
-					.map(prop => `${prop}=${JSON.stringify(e.target[prop])}`)
+					.map(prop => `${prop}=${JSON.stringify(request[prop])}`)
 					.join(" ");
-				reject(new Error(`Error during JSON request: ${ptDetail}`));
 			};
+
+			request.addEventListener("load", () => {
+				try {
+					if (request.status >= 400) {
+						this._REQUEST_LIMITERS.forEach(limiter => {
+							if (limiter.isMatch(url)) limiter.addFailure();
+						});
+
+						return resolve(
+							new this._OptionalJsonResponse({
+								url,
+								status: request.status,
+								error: `Error during JSON request: ${getRequestDetails()}`,
+							}),
+						);
+					}
+
+					resolve(
+						new this._OptionalJsonResponse({
+							url,
+							status: request.status,
+							json: JSON.parse(request.response),
+						}),
+					);
+				} catch (e) {
+					this._REQUEST_LIMITERS.forEach(limiter => {
+						if (limiter.isMatch(url)) limiter.addFailure();
+					});
+
+					resolve(
+						new this._OptionalJsonResponse({
+							url,
+							status: request.status,
+							error: `Could not parse JSON from ${url}: ${e.message}`,
+						}),
+					);
+				}
+			});
+
+			request.addEventListener("error", () => {
+				this._REQUEST_LIMITERS.forEach(limiter => {
+					if (limiter.isMatch(url)) limiter.addFailure();
+				});
+
+				resolve(
+					new this._OptionalJsonResponse({
+						url,
+						status: request.status,
+						error: `Network error during JSON request: ${getRequestDetails()}`,
+					}),
+				);
+			});
 
 			request.send();
 		});
+	}
+
+	/**
+	 * Handle GitHub rate limiting (`429`) errors; see:
+	 *   - https://github.blog/changelog/2025-05-08-updated-rate-limits-for-unauthenticated-requests/
+	 *   - https://github.com/orgs/community/discussions/159123
+	 *   - https://github.com/orgs/community/discussions/157887
+	 *
+	 * Consider adjusting in future; see "Usage statistics and market shares of JavaScript content delivery networks"
+	 *   (https://w3techs.com/technologies/overview/content_delivery) stats for potential targets.
+	 */
+	static async _pLoad_pGetJson ({url, id}) {
+		const optionalJsonBase = await this._pLoad_pGetJson_pGetOptionalJson({url});
+		if (optionalJsonBase.json) return DataUtil._loaded[id] = optionalJsonBase.json;
+
+		if (optionalJsonBase.isJsdelivrRetry()) {
+			const urlJsDelivr = optionalJsonBase.getJsDelivrUrl();
+
+			// eslint-disable-next-line no-console
+			console.debug(`Using jsDeliver fallback for "${url}" (jsDeliver URL was "${urlJsDelivr}")`);
+
+			const optionalJsonJsDelivr = await this._pLoad_pGetJson_pGetOptionalJson({url: urlJsDelivr});
+			if (optionalJsonJsDelivr.json) return DataUtil._loaded[id] = optionalJsonJsDelivr.json;
+		}
+
+		if (optionalJsonBase.isGitHackRetry()) {
+			const urlGitHack = optionalJsonBase.getGithackUrl();
+
+			// eslint-disable-next-line no-console
+			console.debug(`Using GitHack fallback for "${url}" (GitHack URL was "${urlGitHack}")`);
+
+			const optionalJsonGitHack = await this._pLoad_pGetJson_pGetOptionalJson({url: urlGitHack});
+			if (optionalJsonGitHack.json) return DataUtil._loaded[id] = optionalJsonGitHack.json;
+		}
+
+		throw new Error(optionalJsonBase.error); // Throw the base error
+	}
+
+	static async _pLoad ({url, id, isBustCache = false}) {
+		if (DataUtil._loading[id] && !isBustCache) {
+			await DataUtil._loading[id];
+			return DataUtil._loaded[id];
+		}
+
+		DataUtil._loading[id] = DataUtil._pLoad_pGetJson({url, id});
 
 		await DataUtil._loading[id];
 		return DataUtil._loaded[id];
-	},
+	}
 
-	_mutAddProps (data) {
+	static _mutAddProps (data) {
 		if (!data || typeof data !== "object") return;
 
 		for (const k in data) {
@@ -4175,9 +4738,9 @@ globalThis.DataUtil = {
 				it.__prop = k;
 			}
 		}
-	},
+	}
 
-	_verifyMerged (data) {
+	static _verifyMerged (data) {
 		if (!data || typeof data !== "object") return;
 
 		for (const k in data) {
@@ -4190,17 +4753,17 @@ globalThis.DataUtil = {
 				}
 			}
 		}
-	},
+	}
 
-	async loadJSON (url) {
+	static async loadJSON (url) {
 		return DataUtil._loadJson(url, {isDoDataMerge: true});
-	},
+	}
 
-	async loadRawJSON (url, {isBustCache} = {}) {
+	static async loadRawJSON (url, {isBustCache} = {}) {
 		return DataUtil._loadJson(url, {isBustCache});
-	},
+	}
 
-	async _loadJson (url, {isDoDataMerge = false, isBustCache = false} = {}) {
+	static async _loadJson (url, {isDoDataMerge = false, isBustCache = false} = {}) {
 		const procUrl = UrlUtil.link(url, {isBustCache});
 
 		let data;
@@ -4216,11 +4779,11 @@ globalThis.DataUtil = {
 		if (isDoDataMerge) await DataUtil.pDoMetaMerge(url, data);
 
 		return data;
-	},
+	}
 
 	/* -------------------------------------------- */
 
-	async pDoMetaMerge (ident, data, options) {
+	static async pDoMetaMerge (ident, data, options) {
 		DataUtil._mutAddProps(data);
 
 		const isFresh = !DataUtil._merging[ident];
@@ -4239,17 +4802,17 @@ globalThis.DataUtil = {
 		if (isFresh) DataUtil._verifyMerged(out);
 
 		return out;
-	},
+	}
 
-	_pDoMetaMerge_handleCopyProp (prop, arr, entry, options) {
+	static _pDoMetaMerge_handleCopyProp (prop, arr, entry, options) {
 		if (!entry._copy) return;
 		let fnMergeCopy = DataUtil[prop]?.pMergeCopy;
 		if (!fnMergeCopy) throw new Error(`No dependency _copy merge strategy specified for property "${prop}"`);
 		fnMergeCopy = fnMergeCopy.bind(DataUtil[prop]);
 		return fnMergeCopy(arr, entry, options);
-	},
+	}
 
-	async _pDoMetaMerge (ident, data, options) {
+	static async _pDoMetaMerge (ident, data, options) {
 		if (data._meta) {
 			const loadedSourceIds = new Set();
 
@@ -4261,7 +4824,10 @@ globalThis.DataUtil = {
 
 					const isHasInternalCopies = (data._meta.internalCopies || []).includes(dataProp);
 
-					const dependencyData = await Promise.all(sourceIds.map(sourceId => DataUtil.pLoadByMeta(dataProp, sourceId)));
+					const dependencyData = await Promise.all(
+						DataUtil._getLoadGroupedSourceIds({prop: dataProp, sourceIds})
+							.map(sourceId => DataUtil.pLoadByMeta(dataProp, sourceId)),
+					);
 
 					const flatDependencyData = dependencyData.map(dd => dd[dataProp]).flat().filter(Boolean);
 					await Promise.all(data[dataProp].map(entry => DataUtil._pDoMetaMerge_handleCopyProp(dataProp, flatDependencyData, entry, {...options, isErrorOnMissing: !isHasInternalCopies})));
@@ -4319,11 +4885,11 @@ globalThis.DataUtil = {
 		if (data._meta && !Object.keys(data._meta).length) delete data._meta;
 
 		DataUtil._merged[ident] = data;
-	},
+	}
 
 	/* -------------------------------------------- */
 
-	async pDoMetaMergeSingle (prop, meta, ent) {
+	static async pDoMetaMergeSingle (prop, meta, ent) {
 		return (await DataUtil.pDoMetaMerge(
 			CryptUtil.uid(),
 			{
@@ -4334,15 +4900,15 @@ globalThis.DataUtil = {
 				isSkipMetaMergeCache: true,
 			},
 		))[prop][0];
-	},
+	}
 
 	/* -------------------------------------------- */
 
-	getCleanFilename (filename) {
+	static getCleanFilename (filename) {
 		return filename.replace(/[^-_a-zA-Z0-9]/g, "_");
-	},
+	}
 
-	getCsv (headers, rows) {
+	static getCsv (headers, rows) {
 		function escapeCsv (str) {
 			return `"${str.replace(/"/g, `""`).replace(/ +/g, " ").replace(/\n\n+/gi, "\n\n")}"`;
 		}
@@ -4352,7 +4918,7 @@ globalThis.DataUtil = {
 		}
 
 		return `${toCsv(headers)}\n${rows.map(r => toCsv(r)).join("\n")}`;
-	},
+	}
 
 	/**
 	 * @param {string} filename
@@ -4362,7 +4928,7 @@ globalThis.DataUtil = {
 	 * @param {?string} propVersion
 	 * @param {?string} valVersion
 	 */
-	userDownload (
+	static userDownload (
 		filename,
 		data,
 		{
@@ -4378,27 +4944,27 @@ globalThis.DataUtil = {
 		data = {[propVersion]: valVersion, ...data};
 		if (fileType != null) data = {fileType, ...data};
 		return DataUtil._userDownload(filename, JSON.stringify(data, null, "\t"), "text/json");
-	},
+	}
 
-	userDownloadText (filename, string) {
+	static userDownloadText (filename, string) {
 		return DataUtil._userDownload(filename, string, "text/plain");
-	},
+	}
 
-	_userDownload (filename, data, mimeType) {
+	static _userDownload (filename, data, mimeType) {
 		const t = new Blob([data], {type: mimeType});
 		const dataUrl = window.URL.createObjectURL(t);
 		DataUtil.userDownloadDataUrl(filename, dataUrl);
 		setTimeout(() => window.URL.revokeObjectURL(dataUrl), 100);
-	},
+	}
 
-	userDownloadDataUrl (filename, dataUrl) {
+	static userDownloadDataUrl (filename, dataUrl) {
 		const a = document.createElement("a");
 		a.href = dataUrl;
 		a.download = filename;
 		a.dispatchEvent(new MouseEvent("click", {bubbles: true, cancelable: true, view: window}));
-	},
+	}
 
-	doHandleFileLoadErrorsGeneric (errors) {
+	static doHandleFileLoadErrorsGeneric (errors) {
 		if (!errors) return;
 		errors.forEach(err => {
 			JqueryUtil.doToast({
@@ -4406,22 +4972,22 @@ globalThis.DataUtil = {
 				type: "danger",
 			});
 		});
-	},
+	}
 
-	cleanJson (cpy, {isDeleteUniqueId = true} = {}) {
+	static cleanJson (cpy, {isDeleteUniqueId = true} = {}) {
 		if (!cpy) return cpy;
 		cpy.name = cpy._displayName || cpy.name;
 		if (isDeleteUniqueId) delete cpy.uniqueId;
 		DataUtil.__cleanJsonObject(cpy);
 		return cpy;
-	},
+	}
 
-	_CLEAN_JSON_ALLOWED_UNDER_KEYS: [
+	static _CLEAN_JSON_ALLOWED_UNDER_KEYS = [
 		"_copy",
 		"_versions",
 		"_version",
-	],
-	__cleanJsonObject (obj) {
+	];
+	static __cleanJsonObject (obj) {
 		if (obj == null) return obj;
 		if (typeof obj !== "object") return obj;
 
@@ -4435,9 +5001,9 @@ globalThis.DataUtil = {
 			if ((k.startsWith("_") && k !== "_") || k === "customHashId") delete obj[k];
 			else DataUtil.__cleanJsonObject(v);
 		});
-	},
+	}
 
-	_MULTI_SOURCE_PROP_TO_DIR: {
+	static _MULTI_SOURCE_PROP_TO_DIR = {
 		"monster": "bestiary",
 		"monsterFluff": "bestiary",
 		"spell": "spells",
@@ -4448,14 +5014,16 @@ globalThis.DataUtil = {
 		"subclassFluff": "class",
 		"classFeature": "class",
 		"subclassFeature": "class",
-	},
-	_MULTI_SOURCE_PROP_TO_INDEX_NAME: {
+	};
+	static _MULTI_SOURCE_PROP_TO_INDEX_NAME = {
 		"class": "index.json",
 		"subclass": "index.json",
 		"classFeature": "index.json",
 		"subclassFeature": "index.json",
-	},
-	async pLoadByMeta (prop, source) {
+		"classFluff": "fluff-index.json",
+		"subclassFluff": "fluff-index.json",
+	};
+	static async pLoadByMeta (prop, source) {
 		// TODO(future) expand support
 
 		switch (prop) {
@@ -4489,16 +5057,17 @@ globalThis.DataUtil = {
 			// region Special
 			case "item":
 			case "itemGroup":
-			case "baseitem": {
+			case "baseitem":
+			case "magicvariant": {
 				const data = await DataUtil.item.loadRawJSON();
-				if (data[prop] && data[prop].some(it => it.source === source)) return data;
+				if (SourceUtil.isSiteSource(source)) return data;
 				return DataUtil._pLoadByMeta_pGetPrereleaseBrew(source);
 			}
 			case "race": {
 				// FIXME(Future) this should really `loadRawJSON`, but this breaks existing brew.
 				//   Consider a large-scale migration in future.
 				const data = await DataUtil.race.loadJSON({isAddBaseRaces: true});
-				if (data[prop] && data[prop].some(it => it.source === source)) return data;
+				if (SourceUtil.isSiteSource(source)) return data;
 				return DataUtil._pLoadByMeta_pGetPrereleaseBrew(source);
 			}
 			// endregion
@@ -4508,7 +5077,7 @@ globalThis.DataUtil = {
 				const impl = DataUtil[prop];
 				if (impl && (impl.getDataUrl || impl.loadJSON)) {
 					const data = await (impl.loadJSON ? impl.loadJSON() : DataUtil.loadJSON(impl.getDataUrl()));
-					if (data[prop] && data[prop].some(it => it.source === source)) return data;
+					if (SourceUtil.isSiteSource(source)) return data;
 
 					return DataUtil._pLoadByMeta_pGetPrereleaseBrew(source);
 				}
@@ -4517,9 +5086,9 @@ globalThis.DataUtil = {
 			}
 			// endregion
 		}
-	},
+	}
 
-	async _pLoadByMeta_pGetPrereleaseBrew (source) {
+	static async _pLoadByMeta_pGetPrereleaseBrew (source) {
 		const fromPrerelease = await DataUtil.pLoadPrereleaseBySource(source);
 		if (fromPrerelease) return fromPrerelease;
 
@@ -4527,21 +5096,39 @@ globalThis.DataUtil = {
 		if (fromBrew) return fromBrew;
 
 		throw new Error(`Could not find prerelease/brew URL for source "${source}"`);
-	},
+	}
 
 	/* -------------------------------------------- */
 
-	async pLoadPrereleaseBySource (source) {
+	static _getLoadGroupedSourceIds ({prop, sourceIds}) {
+		if (DataUtil._MULTI_SOURCE_PROP_TO_DIR[prop]) return sourceIds;
+
+		let siteSourceFirst = null;
+
+		const nonSiteSources = sourceIds
+			.filter(sourceId => {
+				const isSiteSource = SourceUtil.isSiteSource(sourceId);
+				if (isSiteSource && siteSourceFirst == null) siteSourceFirst = sourceId;
+				return !isSiteSource;
+			});
+
+		if (!siteSourceFirst) return sourceIds;
+		return [siteSourceFirst, ...nonSiteSources];
+	}
+
+	/* -------------------------------------------- */
+
+	static async pLoadPrereleaseBySource (source) {
 		if (typeof PrereleaseUtil === "undefined") return null;
 		return this._pLoadPrereleaseBrewBySource({source, brewUtil: PrereleaseUtil});
-	},
+	}
 
-	async pLoadBrewBySource (source) {
+	static async pLoadBrewBySource (source) {
 		if (typeof BrewUtil2 === "undefined") return null;
 		return this._pLoadPrereleaseBrewBySource({source, brewUtil: BrewUtil2});
-	},
+	}
 
-	async _pLoadPrereleaseBrewBySource ({source, brewUtil}) {
+	static async _pLoadPrereleaseBrewBySource ({source, brewUtil}) {
 		// Load from existing first
 		const fromExisting = await brewUtil.pGetBrewBySource(source);
 		if (fromExisting) return MiscUtil.copyFast(fromExisting.body);
@@ -4551,32 +5138,32 @@ globalThis.DataUtil = {
 		if (!url) return null;
 
 		return DataUtil.loadJSON(url);
-	},
+	}
 
 	/* -------------------------------------------- */
 
 	// region Dbg
-	dbg: {
+	static dbg = {
 		isTrackCopied: false,
-	},
+	};
 	// endregion
 
-	generic: {
-		_MERGE_REQUIRES_PRESERVE_BASE: {
+	static generic = class {
+		static _MERGE_REQUIRES_PRESERVE_BASE = {
 			page: true,
 			otherSources: true,
 			srd: true,
 			srd52: true,
 			basicRules: true,
-			freeRules2024: true,
+			basicRules2024: true,
 			reprintedAs: true,
 			hasFluff: true,
 			hasFluffImages: true,
 			hasToken: true,
 			_versions: true,
-		},
+		};
 
-		_walker_replaceTxt: null,
+		static _walker_replaceTxt = null;
 
 		/**
 		 * @param uid
@@ -4584,7 +5171,7 @@ globalThis.DataUtil = {
 		 * @param [opts]
 		 * @param [opts.isLower] If the returned values should be lowercase.
 		 */
-		unpackUid (uid, tag, opts) {
+		static unpackUid (uid, tag, opts) {
 			opts = opts || {};
 			if (opts.isLower) uid = uid.toLowerCase();
 			let [name, source, displayText, ...others] = uid.split("|").map(Function.prototype.call.bind(String.prototype.trim));
@@ -4602,18 +5189,24 @@ globalThis.DataUtil = {
 				others,
 				isAllowRedirect,
 			};
-		},
+		}
 
-		packUid (ent, tag) {
+		static getUidPacked (ent, tag, opts = {}) {
 			// <name>|<source>
+			const {name} = ent;
+			const source = SourceUtil.getEntitySource(ent);
+			if (!name || !source) throw new Error(`Entity did not have a name and source!`);
 			const sourceDefault = Parser.getTagSource(tag);
-			return [
+			const out = [
 				ent.name,
-				(ent.source || "").toLowerCase() === sourceDefault.toLowerCase() ? "" : ent.source,
-			].join("|").replace(/\|+$/, ""); // Trim trailing pipes
-		},
+				source.toLowerCase() === sourceDefault.toLowerCase() ? "" : source,
+			]
+				.join("|")
+				.replace(/\|+$/, ""); // Trim trailing pipes
+			return opts.isMaintainCase ? out : out.toLowerCase();
+		}
 
-		getUid (ent, {isMaintainCase = false, displayName = null} = {}) {
+		static getUid (ent, {isMaintainCase = false, displayName = null} = {}) {
 			const {name} = ent;
 			const source = SourceUtil.getEntitySource(ent);
 			if (!name || !source) throw new Error(`Entity did not have a name and source!`);
@@ -4622,9 +5215,9 @@ globalThis.DataUtil = {
 			const out = pts.join("|");
 			if (isMaintainCase) return out;
 			return out.toLowerCase();
-		},
+		}
 
-		async _pMergeCopy (impl, page, entryList, entry, options) {
+		static async _pMergeCopy (impl, page, entryList, entry, options) {
 			if (!entry._copy) return;
 
 			const hashCurrent = UrlUtil.URL_TO_HASH_BUILDER[page](entry);
@@ -4632,28 +5225,26 @@ globalThis.DataUtil = {
 
 			if (hashCurrent === hash) throw new Error(`${hashCurrent} _copy self-references! This is a bug!`);
 
-			const it = (impl._mergeCache = impl._mergeCache || {})[hash] || DataUtil.generic._pMergeCopy_search(impl, page, entryList, entry, options);
+			const entParent = (impl._mergeCache = impl._mergeCache || {})[hash] || DataUtil.generic._pMergeCopy_search(impl, page, entryList, entry, options);
 
-			if (!it) {
+			if (!entParent) {
 				if (options.isErrorOnMissing) {
 					throw new Error(`Could not find "${page}" entity "${entry._copy.name}" ("${entry._copy.source}") to copy in copier "${entry.name}" ("${entry.source}")`);
 				}
 				return;
 			}
 
-			if (DataUtil.dbg.isTrackCopied) it.dbg_isCopied = true;
+			if (DataUtil.dbg.isTrackCopied) entParent.dbg_isCopied = true;
 			// Handle recursive copy
-			if (it._copy) await DataUtil.generic._pMergeCopy(impl, page, entryList, it, options);
+			if (entParent._copy) await DataUtil.generic._pMergeCopy(impl, page, entryList, entParent, options);
 
 			// Preload templates, if required
-			// TODO(Template) allow templates for other entity types
-			const templateData = entry._copy?._templates
-				? (await DataUtil.loadJSON(`${Renderer.get().baseUrl}data/bestiary/template.json`))
-				: null;
-			return DataUtil.generic.copyApplier.getCopy(impl, MiscUtil.copyFast(it), entry, templateData, options);
-		},
+			const templates = await this._pMergeCopy_pGetTemplates(entry);
 
-		_pMergeCopy_search (impl, page, entryList, entry, options) {
+			return DataUtil.generic.copyApplier.getCopy(impl, MiscUtil.copyFast(entParent), entry, templates, options);
+		}
+
+		static _pMergeCopy_search (impl, page, entryList, entry, options) {
 			const entryHash = UrlUtil.URL_TO_HASH_BUILDER[page](entry._copy);
 			return entryList.find(ent => {
 				const hash = UrlUtil.URL_TO_HASH_BUILDER[page](ent);
@@ -4661,14 +5252,27 @@ globalThis.DataUtil = {
 				impl._mergeCache[hash] ||= ent;
 				return hash === entryHash;
 			});
-		},
+		}
 
-		COPY_ENTRY_PROPS: [
+		static async _pMergeCopy_pGetTemplates (entry) {
+			if (!entry._copy?._templates) return null;
+
+			// TODO(Template) allow templates for other entity types
+			switch (entry.__prop) {
+				case "monster": {
+					const templateData = await DataUtil.loadJSON(`${Renderer.get().baseUrl}data/bestiary/template.json`);
+					return templateData.monsterTemplate;
+				}
+				default: throw new Error(`Unsupported!`);
+			}
+		}
+
+		static COPY_ENTRY_PROPS = [
 			"action", "bonus", "reaction", "trait", "legendary", "mythic", "variant", "spellcasting",
 			"actionHeader", "bonusHeader", "reactionHeader", "legendaryHeader", "mythicHeader",
-		],
+		];
 
-		copyApplier: class {
+		static copyApplier = class {
 			static _WALKER = null;
 
 			// convert everything to arrays
@@ -4698,25 +5302,28 @@ globalThis.DataUtil = {
 				return split.join("");
 			}
 
-			static _doMod_appendStr ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				if (copyTo[prop]) copyTo[prop] = `${copyTo[prop]}${modInfo.joiner || ""}${modInfo.str}`;
-				else copyTo[prop] = modInfo.str;
+			static _doMod_appendStr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				if (valExisting) MiscUtil.set(copyTo, ...propPath, `${valExisting}${modInfo.joiner || ""}${modInfo.str}`);
+				else MiscUtil.set(copyTo, ...propPath, modInfo.str);
 			}
 
-			static _doMod_replaceName ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				if (!copyTo[prop]) return;
+			static _doMod_replaceName ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const ents = MiscUtil.get(copyTo, ...propPath);
+				if (!ents) return;
 
 				DataUtil.generic._walker_replaceTxt = DataUtil.generic._walker_replaceTxt || MiscUtil.getWalker();
 				const re = this._getRegexFromReplaceModInfo({replace: modInfo.replace, flags: modInfo.flags});
 				const handlers = {string: this._doReplaceStringHandler.bind(null, {re: re, withStr: modInfo.with})};
 
-				copyTo[prop].forEach(it => {
-					if (it.name) it.name = DataUtil.generic._walker_replaceTxt.walk(it.name, handlers);
+				ents.forEach(ent => {
+					if (ent.name) ent.name = DataUtil.generic._walker_replaceTxt.walk(ent.name, handlers);
 				});
 			}
 
-			static _doMod_replaceTxt ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				if (!copyTo[prop]) return;
+			static _doMod_replaceTxt ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const ents = MiscUtil.get(copyTo, ...propPath);
+				if (!ents) return;
 
 				DataUtil.generic._walker_replaceTxt = DataUtil.generic._walker_replaceTxt || MiscUtil.getWalker();
 				const re = this._getRegexFromReplaceModInfo({replace: modInfo.replace, flags: modInfo.flags});
@@ -4727,105 +5334,112 @@ globalThis.DataUtil = {
 
 				if (props.includes(null)) {
 					// Handle any pure strings, e.g. `"legendaryHeader"`
-					copyTo[prop] = copyTo[prop].map(it => {
+					MiscUtil.set(copyTo, ...propPath, ents.map(it => {
 						if (typeof it !== "string") return it;
 						return DataUtil.generic._walker_replaceTxt.walk(it, handlers);
-					});
+					}));
 				}
 
-				copyTo[prop].forEach(it => {
+				ents.forEach(ent => {
 					props.forEach(prop => {
 						if (prop == null) return;
-						if (it[prop]) it[prop] = DataUtil.generic._walker_replaceTxt.walk(it[prop], handlers);
+						if (ent[prop]) ent[prop] = DataUtil.generic._walker_replaceTxt.walk(ent[prop], handlers);
 					});
 				});
 			}
 
-			static _doMod_prependArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
+			static _doMod_prependArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
 				this._doEnsureArray({obj: modInfo, prop: "items"});
-				copyTo[prop] = copyTo[prop] ? modInfo.items.concat(copyTo[prop]) : modInfo.items;
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				MiscUtil.set(copyTo, ...propPath, valExisting ? modInfo.items.concat(valExisting) : modInfo.items);
 			}
 
-			static _doMod_appendArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
+			static _doMod_appendArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
 				this._doEnsureArray({obj: modInfo, prop: "items"});
-				copyTo[prop] = copyTo[prop] ? copyTo[prop].concat(modInfo.items) : modInfo.items;
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				MiscUtil.set(copyTo, ...propPath, valExisting ? valExisting.concat(modInfo.items) : modInfo.items);
 			}
 
-			static _doMod_appendIfNotExistsArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
+			static _doMod_appendIfNotExistsArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
 				this._doEnsureArray({obj: modInfo, prop: "items"});
-				if (!copyTo[prop]) return copyTo[prop] = modInfo.items;
-				copyTo[prop] = copyTo[prop].concat(modInfo.items.filter(it => !copyTo[prop].some(x => CollectionUtil.deepEquals(it, x))));
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				if (!valExisting) return MiscUtil.set(copyTo, ...propPath, modInfo.items);
+				MiscUtil.set(copyTo, ...propPath, valExisting.concat(modInfo.items.filter(it => !valExisting.some(x => CollectionUtil.deepEquals(it, x)))));
 			}
 
-			static _doMod_replaceArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop, isThrow = true}) {
+			static _doMod_replaceArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath, isThrow = true}) {
 				this._doEnsureArray({obj: modInfo, prop: "items"});
 
-				if (!copyTo[prop]) {
-					if (isThrow) throw new Error(`${msgPtFailed} Could not find "${prop}" array`);
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				if (!valExisting) {
+					if (isThrow) throw new Error(`${msgPtFailed} Could not find "${propPath.join(".")}" array`);
 					return false;
 				}
 
 				let ixOld;
 				if (modInfo.replace.regex) {
 					const re = new RegExp(modInfo.replace.regex, modInfo.replace.flags || "");
-					ixOld = copyTo[prop].findIndex(it => it.name ? re.test(it.name) : typeof it === "string" ? re.test(it) : false);
+					ixOld = valExisting.findIndex(it => it.name ? re.test(it.name) : typeof it === "string" ? re.test(it) : false);
 				} else if (modInfo.replace.index != null) {
 					ixOld = modInfo.replace.index;
 				} else {
-					ixOld = copyTo[prop].findIndex(it => it.name ? it.name === modInfo.replace : it === modInfo.replace);
+					ixOld = valExisting.findIndex(it => it.name ? it.name === modInfo.replace : it === modInfo.replace);
 				}
 
 				if (~ixOld) {
-					copyTo[prop].splice(ixOld, 1, ...modInfo.items);
+					valExisting.splice(ixOld, 1, ...modInfo.items);
 					return true;
-				} else if (isThrow) throw new Error(`${msgPtFailed} Could not find "${prop}" item with name "${modInfo.replace}" to replace`);
+				} else if (isThrow) throw new Error(`${msgPtFailed} Could not find "${propPath.join(".")}" item with name "${modInfo.replace}" to replace`);
 				return false;
 			}
 
-			static _doMod_replaceOrAppendArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				const didReplace = this._doMod_replaceArr({copyTo, copyFrom, modInfo, msgPtFailed, prop, isThrow: false});
-				if (!didReplace) this._doMod_appendArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
+			static _doMod_replaceOrAppendArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const didReplace = this._doMod_replaceArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath, isThrow: false});
+				if (!didReplace) this._doMod_appendArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
 			}
 
-			static _doMod_insertArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
+			static _doMod_insertArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
 				this._doEnsureArray({obj: modInfo, prop: "items"});
-				if (!copyTo[prop]) throw new Error(`${msgPtFailed} Could not find "${prop}" array`);
-				copyTo[prop].splice(~modInfo.index ? modInfo.index : copyTo[prop].length, 0, ...modInfo.items);
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				if (!valExisting) throw new Error(`${msgPtFailed} Could not find "${valExisting.join(".")}" array`);
+				valExisting.splice(~modInfo.index ? modInfo.index : valExisting.length, 0, ...modInfo.items);
 			}
 
-			static _doMod_removeArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
+			static _doMod_removeArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
 				if (modInfo.names) {
 					this._doEnsureArray({obj: modInfo, prop: "names"});
 					modInfo.names.forEach(nameToRemove => {
-						const ixOld = copyTo[prop].findIndex(it => it.name === nameToRemove);
-						if (~ixOld) copyTo[prop].splice(ixOld, 1);
+						const ixOld = valExisting.findIndex(it => it.name === nameToRemove);
+						if (~ixOld) valExisting.splice(ixOld, 1);
 						else {
-							if (!modInfo.force) throw new Error(`${msgPtFailed} Could not find "${prop}" item with name "${nameToRemove}" to remove`);
+							if (!modInfo.force) throw new Error(`${msgPtFailed} Could not find "${propPath.join(".")}" item with name "${nameToRemove}" to remove`);
 						}
 					});
 				} else if (modInfo.items) {
 					this._doEnsureArray({obj: modInfo, prop: "items"});
 					modInfo.items.forEach(itemToRemove => {
-						const ixOld = copyTo[prop].findIndex(it => it === itemToRemove);
-						if (~ixOld) copyTo[prop].splice(ixOld, 1);
-						else throw new Error(`${msgPtFailed} Could not find "${prop}" item "${itemToRemove}" to remove`);
+						const ixOld = valExisting.findIndex(it => it === itemToRemove);
+						if (~ixOld) valExisting.splice(ixOld, 1);
+						else throw new Error(`${msgPtFailed} Could not find "${propPath.join(".")}" item "${itemToRemove}" to remove`);
 					});
 				} else throw new Error(`${msgPtFailed} One of "names" or "items" must be provided!`);
 			}
 
-			static _doMod_renameArr ({copyTo, copyFrom, modInfo, msgPtFailed, prop, isThrow = true}) {
+			static _doMod_renameArr ({copyTo, copyFrom, modInfo, msgPtFailed, propPath, isThrow = true}) {
 				this._doEnsureArray({obj: modInfo, prop: "renames"});
 
-				if (!copyTo[prop]) {
-					if (isThrow) throw new Error(`${msgPtFailed} Could not find "${prop}" array`);
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				if (!valExisting) {
+					if (isThrow) throw new Error(`${msgPtFailed} Could not find "${propPath.join(".")}" array`);
 					return;
 				}
 
 				modInfo.renames
 					.forEach(rename => {
-						const ent = copyTo[prop].find(ent => ent?.name === rename.rename);
+						const ent = valExisting.find(ent => ent?.name === rename.rename);
 						if (!ent) {
-							if (isThrow) throw new Error(`${msgPtFailed} Could not find "${prop}" item with name "${rename.rename}" to rename`);
+							if (isThrow) throw new Error(`${msgPtFailed} Could not find "${propPath.join(".")}" item with name "${rename.rename}" to rename`);
 							return;
 						}
 
@@ -4833,8 +5447,8 @@ globalThis.DataUtil = {
 					});
 			}
 
-			static _doMod_calculateProp ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				copyTo[prop] = copyTo[prop] || {};
+			static _doMod_calculateProp ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const tgt = MiscUtil.getOrSet(copyTo, ...propPath, {});
 				const toExec = modInfo.formula.replace(/<\$([^$]+)\$>/g, (...m) => {
 					switch (m[1]) {
 						case "prof_bonus": return Parser.crToPb(copyTo.cr);
@@ -4844,31 +5458,35 @@ globalThis.DataUtil = {
 				});
 				// TODO(Future) add option to format as bonus
 				// eslint-disable-next-line no-eval
-				copyTo[prop][modInfo.prop] = eval(DataUtil.generic.variableResolver.getCleanMathExpression(toExec));
+				tgt[modInfo.prop] = eval(DataUtil.generic.variableResolver.getCleanMathExpression(toExec));
 			}
 
-			static _doMod_scalarAddProp ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
+			static _doMod_scalarAddProp ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const tgt = MiscUtil.get(copyTo, ...propPath);
+				if (!tgt) return;
+
 				const applyTo = (k) => {
-					const out = Number(copyTo[prop][k]) + modInfo.scalar;
-					const isString = typeof copyTo[prop][k] === "string";
-					copyTo[prop][k] = isString ? `${out >= 0 ? "+" : ""}${out}` : out;
+					const out = Number(tgt[k]) + modInfo.scalar;
+					const isString = typeof tgt[k] === "string";
+					tgt[k] = isString ? `${out >= 0 ? "+" : ""}${out}` : out;
 				};
 
-				if (!copyTo[prop]) return;
-				if (modInfo.prop === "*") Object.keys(copyTo[prop]).forEach(k => applyTo(k));
+				if (modInfo.prop === "*") Object.keys(tgt).forEach(k => applyTo(k));
 				else applyTo(modInfo.prop);
 			}
 
-			static _doMod_scalarMultProp ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
+			static _doMod_scalarMultProp ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const tgt = MiscUtil.get(copyTo, ...propPath);
+				if (!tgt) return;
+
 				const applyTo = (k) => {
-					let out = Number(copyTo[prop][k]) * modInfo.scalar;
+					let out = Number(tgt[k]) * modInfo.scalar;
 					if (modInfo.floor) out = Math.floor(out);
-					const isString = typeof copyTo[prop][k] === "string";
-					copyTo[prop][k] = isString ? `${out >= 0 ? "+" : ""}${out}` : out;
+					const isString = typeof tgt[k] === "string";
+					tgt[k] = isString ? `${out >= 0 ? "+" : ""}${out}` : out;
 				};
 
-				if (!copyTo[prop]) return;
-				if (modInfo.prop === "*") Object.keys(copyTo[prop]).forEach(k => applyTo(k));
+				if (modInfo.prop === "*") Object.keys(tgt).forEach(k => applyTo(k));
 				else applyTo(modInfo.prop);
 			}
 
@@ -5078,33 +5696,43 @@ globalThis.DataUtil = {
 				});
 			}
 
-			static _doMod_scalarAddHit ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				if (!copyTo[prop]) return;
+			static _doMod_scalarAddHit ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				if (!valExisting) return;
 
 				const re = /{@hit ([-+]?\d+)}/g;
-				copyTo[prop] = this._WALKER.walk(
-					copyTo[prop],
-					{
-						string: (str) => {
-							return str
-								.replace(re, (m0, m1) => `{@hit ${Number(m1) + modInfo.scalar}}`);
+				MiscUtil.set(
+					copyTo,
+					...propPath,
+					this._WALKER.walk(
+						valExisting,
+						{
+							string: (str) => {
+								return str
+									.replace(re, (m0, m1) => `{@hit ${Number(m1) + modInfo.scalar}}`);
+							},
 						},
-					},
+					),
 				);
 			}
 
-			static _doMod_scalarAddDc ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				if (!copyTo[prop]) return;
+			static _doMod_scalarAddDc ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const valExisting = MiscUtil.get(copyTo, ...propPath);
+				if (!valExisting) return;
 
 				const re = /{@dc (\d+)(?:\|[^}]+)?}/g;
-				copyTo[prop] = this._WALKER.walk(
-					copyTo[prop],
-					{
-						string: (str) => {
-							return str
-								.replace(re, (m0, m1) => `{@dc ${Number(m1) + modInfo.scalar}}`);
+				MiscUtil.set(
+					copyTo,
+					...propPath,
+					this._WALKER.walk(
+						valExisting,
+						{
+							string: (str) => {
+								return str
+									.replace(re, (m0, m1) => `{@dc ${Number(m1) + modInfo.scalar}}`);
+							},
 						},
-					},
+					),
 				);
 			}
 
@@ -5137,61 +5765,63 @@ globalThis.DataUtil = {
 				}
 			}
 
-			static _doMod_setProp ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				const propPath = modInfo.prop.split(".");
-				if (prop != null && prop !== "*") propPath.unshift(prop);
-				MiscUtil.set(copyTo, ...propPath, MiscUtil.copyFast(modInfo.value));
+			static _doMod_setProp ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const propPathCombined = modInfo.prop ? modInfo.prop.split(".") : [];
+				if (propPath != null && !CollectionUtil.deepEquals(propPath, ["*"])) propPathCombined.unshift(...propPath);
+				MiscUtil.set(copyTo, ...propPathCombined, MiscUtil.copyFast(modInfo.value));
 			}
 
-			static _doMod_prefixSuffixStringProp ({copyTo, copyFrom, modInfo, msgPtFailed, prop}) {
-				const propPath = modInfo.prop.split(".");
-				if (prop != null && prop !== "*") propPath.unshift(prop);
-				const str = MiscUtil.get(copyTo, ...propPath);
+			static _doMod_prefixSuffixStringProp ({copyTo, copyFrom, modInfo, msgPtFailed, propPath}) {
+				const propPathCombined = modInfo.prop ? modInfo.prop.split(".") : [];
+				if (propPath != null && !CollectionUtil.deepEquals(propPath, ["*"])) propPathCombined.unshift(...propPath);
+				const str = MiscUtil.get(copyTo, ...propPathCombined);
 				if (str == null || !(typeof str === "string")) return;
-				MiscUtil.set(copyTo, ...propPath, `${modInfo.prefix || ""}${str}${modInfo.suffix || ""}`);
+				MiscUtil.set(copyTo, ...propPathCombined, `${modInfo.prefix || ""}${str}${modInfo.suffix || ""}`);
 			}
 
 			static _doMod_handleProp ({copyTo, copyFrom, modInfos, msgPtFailed, prop = null}) {
+				const propPath = prop ? prop.split(".") : null;
+
 				modInfos.forEach(modInfo => {
 					if (typeof modInfo === "string") {
 						switch (modInfo) {
 							case "remove": return delete copyTo[prop];
 							default: throw new Error(`${msgPtFailed} Unhandled mode: ${modInfo}`);
 						}
-					} else {
-						switch (modInfo.mode) {
-							case "appendStr": return this._doMod_appendStr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "replaceName": return this._doMod_replaceName({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "replaceTxt": return this._doMod_replaceTxt({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "prependArr": return this._doMod_prependArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "appendArr": return this._doMod_appendArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "replaceArr": return this._doMod_replaceArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "replaceOrAppendArr": return this._doMod_replaceOrAppendArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "appendIfNotExistsArr": return this._doMod_appendIfNotExistsArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "insertArr": return this._doMod_insertArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "removeArr": return this._doMod_removeArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "renameArr": return this._doMod_renameArr({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "calculateProp": return this._doMod_calculateProp({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "scalarAddProp": return this._doMod_scalarAddProp({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "scalarMultProp": return this._doMod_scalarMultProp({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "setProp": return this._doMod_setProp({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "prefixSuffixStringProp": return this._doMod_prefixSuffixStringProp({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							// region Bestiary specific
-							case "addSenses": return this._doMod_addSenses({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "addSaves": return this._doMod_addSaves({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "addSkills": return this._doMod_addSkills({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "addAllSaves": return this._doMod_addAllSaves({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "addAllSkills": return this._doMod_addAllSkills({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "addSpells": return this._doMod_addSpells({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "replaceSpells": return this._doMod_replaceSpells({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "removeSpells": return this._doMod_removeSpells({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "maxSize": return this._doMod_maxSize({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "scalarMultXp": return this._doMod_scalarMultXp({copyTo, copyFrom, modInfo, msgPtFailed});
-							case "scalarAddHit": return this._doMod_scalarAddHit({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							case "scalarAddDc": return this._doMod_scalarAddDc({copyTo, copyFrom, modInfo, msgPtFailed, prop});
-							// endregion
-							default: throw new Error(`${msgPtFailed} Unhandled mode: ${modInfo.mode}`);
-						}
+					}
+
+					switch (modInfo.mode) {
+						case "appendStr": return this._doMod_appendStr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "replaceName": return this._doMod_replaceName({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "replaceTxt": return this._doMod_replaceTxt({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "prependArr": return this._doMod_prependArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "appendArr": return this._doMod_appendArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "replaceArr": return this._doMod_replaceArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "replaceOrAppendArr": return this._doMod_replaceOrAppendArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "appendIfNotExistsArr": return this._doMod_appendIfNotExistsArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "insertArr": return this._doMod_insertArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "removeArr": return this._doMod_removeArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "renameArr": return this._doMod_renameArr({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "calculateProp": return this._doMod_calculateProp({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "scalarAddProp": return this._doMod_scalarAddProp({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "scalarMultProp": return this._doMod_scalarMultProp({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "setProp": return this._doMod_setProp({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "prefixSuffixStringProp": return this._doMod_prefixSuffixStringProp({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						// region Bestiary specific
+						case "addSenses": return this._doMod_addSenses({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "addSaves": return this._doMod_addSaves({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "addSkills": return this._doMod_addSkills({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "addAllSaves": return this._doMod_addAllSaves({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "addAllSkills": return this._doMod_addAllSkills({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "addSpells": return this._doMod_addSpells({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "replaceSpells": return this._doMod_replaceSpells({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "removeSpells": return this._doMod_removeSpells({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "maxSize": return this._doMod_maxSize({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "scalarMultXp": return this._doMod_scalarMultXp({copyTo, copyFrom, modInfo, msgPtFailed});
+						case "scalarAddHit": return this._doMod_scalarAddHit({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						case "scalarAddDc": return this._doMod_scalarAddDc({copyTo, copyFrom, modInfo, msgPtFailed, propPath});
+						// endregion
+						default: throw new Error(`${msgPtFailed} Unhandled mode: ${modInfo.mode}`);
 					}
 				});
 			}
@@ -5213,7 +5843,7 @@ globalThis.DataUtil = {
 				else this._doMod_handleProp({copyTo, copyFrom, modInfos, msgPtFailed});
 			}
 
-			static getCopy (impl, copyFrom, copyTo, templateData, {isExternalApplicationKeepCopy = false, isExternalApplicationIdentityOnly = false} = {}) {
+			static getCopy (impl, copyFrom, copyTo, templates, {isExternalApplicationKeepCopy = false, isExternalApplicationIdentityOnly = false} = {}) {
 				this._WALKER ||= MiscUtil.getWalker();
 
 				if (isExternalApplicationKeepCopy) copyTo.__copy = MiscUtil.copyFast(copyFrom);
@@ -5225,16 +5855,15 @@ globalThis.DataUtil = {
 				if (copyMeta._mod) this._normaliseMods(copyMeta);
 
 				// fetch and apply any external template -- append them to existing copy mods where available
-				let templates = null;
+				let templatesToApply = null;
 				let templateErrors = [];
 				if (copyMeta._templates?.length) {
-					templates = copyMeta._templates
+					templatesToApply = copyMeta._templates
 						.map(({name: templateName, source: templateSource}) => {
 							templateName = templateName.toLowerCase().trim();
 							templateSource = templateSource.toLowerCase().trim();
 
-							// TODO(Template) allow templates for other entity types
-							const template = templateData.monsterTemplate
+							const template = templates
 								.find(({name, source}) => name.toLowerCase().trim() === templateName && source.toLowerCase().trim() === templateSource);
 
 							if (!template) {
@@ -5246,7 +5875,7 @@ globalThis.DataUtil = {
 						})
 						.filter(Boolean);
 
-					templates
+					templatesToApply
 						.forEach(template => {
 							if (!template.apply._mod) return;
 
@@ -5284,8 +5913,8 @@ globalThis.DataUtil = {
 				});
 
 				// apply any root template properties after doing base copy
-				if (templates?.length) {
-					templates
+				if (templatesToApply?.length) {
+					templatesToApply
 						.forEach(template => {
 							if (!template.apply?._root) return;
 
@@ -5315,9 +5944,9 @@ globalThis.DataUtil = {
 				// cleanup
 				delete copyTo._copy;
 			}
-		},
+		};
 
-		variableResolver: class {
+		static variableResolver = class {
 			/** @abstract */
 			static _ResolverBase = class {
 				mode;
@@ -5422,7 +6051,7 @@ globalThis.DataUtil = {
 
 				_getResolved ({ent, detail}) {
 					const replaced = detail
-						.replace(/\b(?<abil>str|dex|con|int|wis|cha)\b/gi, (...m) => Parser.getAbilityModNumber(Number(ent[m.last().abil])))
+						.replace(/\b(?<abil>str|dex|con|int|wis|cha)\b/gi, (...m) => Parser.getAbilityModNumber(Number(ent[m.at(-1).abil])))
 						.replace(/\bsize_mult\b/g, () => this._getSizeMult(this._getSize({ent})));
 
 					// eslint-disable-next-line no-eval
@@ -5474,7 +6103,7 @@ globalThis.DataUtil = {
 						obj,
 						{
 							string: str => str.replace(/<\$(?<variable>[^$]+)\$>/g, (...m) => {
-								const [mode, detail] = m.last().variable.split("__");
+								const [mode, detail] = m.at(-1).variable.split("__");
 
 								const resolver = this._MODE_LOOKUP[mode];
 								if (!resolver) return m[0];
@@ -5499,7 +6128,7 @@ globalThis.DataUtil = {
 
 			static getHumanReadableString (str, {msgPtFailed = null} = {}) {
 				return str.replace(/<\$(?<variable>[^$]+)\$>/g, (...m) => {
-					const [mode, detail] = m.last().variable.split("__");
+					const [mode, detail] = m.at(-1).variable.split("__");
 
 					const resolver = this._MODE_LOOKUP[mode];
 					if (!resolver) return m[0];
@@ -5509,9 +6138,9 @@ globalThis.DataUtil = {
 			}
 
 			static getCleanMathExpression (str) { return str.replace(/[^-+/*0-9.,]+/g, ""); }
-		},
+		};
 
-		getVersions (parent, {impl = null, isExternalApplicationIdentityOnly = false} = {}) {
+		static getVersions (parent, {impl = null, isExternalApplicationIdentityOnly = false} = {}) {
 			if (!parent?._versions?.length) return [];
 
 			return parent._versions
@@ -5530,9 +6159,9 @@ globalThis.DataUtil = {
 						{isNoCount: true},
 					);
 				});
-		},
+		}
 
-		_getVersions_template ({ver}) {
+		static _getVersions_template ({ver}) {
 			return ver._implementations
 				.map(impl => {
 					let cpyTemplate = MiscUtil.copyFast(ver._abstract);
@@ -5555,15 +6184,15 @@ globalThis.DataUtil = {
 
 					return cpyTemplate;
 				});
-		},
+		}
 
-		_getVersions_basic ({ver}) {
+		static _getVersions_basic ({ver}) {
 			const cpyVer = MiscUtil.copyFast(ver);
 			DataUtil.generic._getVersions_mutExpandCopy({ent: cpyVer});
 			return cpyVer;
-		},
+		}
 
-		_getVersions_mutExpandCopy ({ent}) {
+		static _getVersions_mutExpandCopy ({ent}) {
 			// Tweak the data structure to match what `_applyCopy` expects
 			ent._copy = {
 				_mod: ent._mod,
@@ -5571,13 +6200,14 @@ globalThis.DataUtil = {
 			};
 			delete ent._mod;
 			delete ent._preserve;
-		},
+		}
 
-		_getVersion ({parentEntity, version, impl = null, isExternalApplicationIdentityOnly}) {
+		static _getVersion ({parentEntity, version, impl = null, isExternalApplicationIdentityOnly}) {
 			const additionalData = {
 				_versionBase_isVersion: true,
 				_versionBase_name: parentEntity.name,
 				_versionBase_source: parentEntity.source,
+				_versionBase_hash: UrlUtil.URL_TO_HASH_BUILDER[parentEntity.__prop](parentEntity),
 				_versionBase_hasToken: parentEntity.hasToken,
 				_versionBase_hasFluff: parentEntity.hasFluff,
 				_versionBase_hasFluffImages: parentEntity.hasFluffImages,
@@ -5605,10 +6235,10 @@ globalThis.DataUtil = {
 			);
 			Object.assign(version, additionalData);
 			return version;
-		},
-	},
+		}
+	};
 
-	proxy: class {
+	static proxy = class {
 		static getVersions (prop, ent, {isExternalApplicationIdentityOnly = false} = {}) {
 			if (DataUtil[prop]?.getVersions) return DataUtil[prop]?.getVersions(ent, {isExternalApplicationIdentityOnly});
 			return DataUtil.generic.getVersions(ent, {isExternalApplicationIdentityOnly});
@@ -5622,7 +6252,7 @@ globalThis.DataUtil = {
 		 * @param [opts.isLower]
 		 */
 		static unpackUid (prop, uid, tag, opts) {
-			if (DataUtil[prop]?.unpackUid) return DataUtil[prop]?.unpackUid(uid, tag, opts);
+			if (DataUtil[prop]?.unpackUid) return DataUtil[prop]?.unpackUid(uid, opts);
 			return DataUtil.generic.unpackUid(uid, tag, opts);
 		}
 
@@ -5642,9 +6272,14 @@ globalThis.DataUtil = {
 			if (DataUtil[prop]?.getUid) return DataUtil[prop].getUid(ent, opts);
 			return DataUtil.generic.getUid(ent, opts);
 		}
-	},
 
-	monster: class extends _DataUtilPropConfigMultiSource {
+		static getUidPacked (prop, ent, tag, opts) {
+			if (DataUtil[prop]?.getPackedUid) return DataUtil[prop].getUidPacked(ent, tag, opts);
+			return DataUtil.generic.getUidPacked(ent, tag, opts);
+		}
+	};
+
+	static monster = class extends _DataUtilPropConfigMultiSource {
 		static _MERGE_REQUIRES_PRESERVE = {
 			legendaryGroup: true,
 			environment: true,
@@ -5744,20 +6379,20 @@ globalThis.DataUtil = {
 				(DataUtil.monster.legendaryGroupLookup[it.source] ||= {})[it.name] = it;
 			});
 		}
-	},
+	};
 
-	monsterFluff: class extends _DataUtilPropConfigMultiSource {
+	static monsterFluff = class extends _DataUtilPropConfigMultiSource {
 		static _PAGE = UrlUtil.PG_BESTIARY;
 		static _DIR = "bestiary";
 		static _PROP = "monsterFluff";
-	},
+	};
 
-	monsterTemplate: class extends _DataUtilPropConfigSingleSource {
+	static monsterTemplate = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = "monsterTemplate";
 		static _FILENAME = "bestiary/template.json";
-	},
+	};
 
-	spell: class extends _DataUtilPropConfigMultiSource {
+	static spell = class extends _DataUtilPropConfigMultiSource {
 		static _PAGE = UrlUtil.PG_SPELLS;
 		static _DIR = "spells";
 		static _PROP = "spell";
@@ -5953,60 +6588,60 @@ globalThis.DataUtil = {
 						});
 				});
 		}
-	},
+	};
 
-	spellFluff: class extends _DataUtilPropConfigMultiSource {
+	static spellFluff = class extends _DataUtilPropConfigMultiSource {
 		static _PAGE = UrlUtil.PG_SPELLS;
 		static _DIR = "spells";
 		static _PROP = "spellFluff";
-	},
+	};
 
-	background: class extends _DataUtilPropConfigSingleSource {
+	static background = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_BACKGROUNDS;
 		static _FILENAME = "backgrounds.json";
-	},
+	};
 
-	backgroundFluff: class extends _DataUtilPropConfigSingleSource {
+	static backgroundFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_BACKGROUNDS;
 		static _FILENAME = "fluff-backgrounds.json";
-	},
+	};
 
-	charoption: class extends _DataUtilPropConfigSingleSource {
+	static charoption = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_CHAR_CREATION_OPTIONS;
 		static _FILENAME = "charcreationoptions.json";
-	},
+	};
 
-	charoptionFluff: class extends _DataUtilPropConfigSingleSource {
+	static charoptionFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_CHAR_CREATION_OPTIONS;
 		static _FILENAME = "fluff-charcreationoptions.json";
-	},
+	};
 
-	condition: class extends _DataUtilPropConfigSingleSource {
+	static condition = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_CONDITIONS_DISEASES;
 		static _FILENAME = "conditionsdiseases.json";
-	},
+	};
 
-	conditionFluff: class extends _DataUtilPropConfigSingleSource {
+	static conditionFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_CONDITIONS_DISEASES;
 		static _FILENAME = "fluff-conditionsdiseases.json";
-	},
+	};
 
-	disease: class extends _DataUtilPropConfigSingleSource {
+	static disease = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_CONDITIONS_DISEASES;
 		static _FILENAME = "conditionsdiseases.json";
-	},
+	};
 
-	feat: class extends _DataUtilPropConfigSingleSource {
+	static feat = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_FEATS;
 		static _FILENAME = "feats.json";
-	},
+	};
 
-	featFluff: class extends _DataUtilPropConfigSingleSource {
+	static featFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_FEATS;
 		static _FILENAME = "fluff-feats.json";
-	},
+	};
 
-	item: class extends _DataUtilPropConfigCustom {
+	static item = class extends _DataUtilPropConfigCustom {
 		static _MERGE_REQUIRES_PRESERVE = {
 			lootTables: true,
 			tier: true,
@@ -6050,9 +6685,9 @@ globalThis.DataUtil = {
 		static async loadBrew () {
 			return {item: await Renderer.item.pGetItemsFromBrew()};
 		}
-	},
+	};
 
-	itemGroup: class extends _DataUtilPropConfig {
+	static itemGroup = class extends _DataUtilPropConfig {
 		static _MERGE_REQUIRES_PRESERVE = {
 			lootTables: true,
 			tier: true,
@@ -6061,21 +6696,31 @@ globalThis.DataUtil = {
 
 		static async pMergeCopy (...args) { return DataUtil.item.pMergeCopy(...args); }
 		static async loadRawJSON (...args) { return DataUtil.item.loadRawJSON(...args); }
-	},
+	};
 
-	baseitem: class extends _DataUtilPropConfig {
+	static baseitem = class extends _DataUtilPropConfig {
 		static _PAGE = UrlUtil.PG_ITEMS;
 
 		static async pMergeCopy (...args) { return DataUtil.item.pMergeCopy(...args); }
 		static async loadRawJSON (...args) { return DataUtil.item.loadRawJSON(...args); }
-	},
+	};
 
-	itemFluff: class extends _DataUtilPropConfigSingleSource {
+	static magicvariant = class extends _DataUtilPropConfig {
+		static _MERGE_REQUIRES_PRESERVE = {
+			lootTables: true,
+			tier: true,
+		};
+		static _PAGE = "magicvariant";
+
+		static async loadRawJSON (...args) { return DataUtil.item.loadRawJSON(...args); }
+	};
+
+	static itemFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_ITEMS;
 		static _FILENAME = "fluff-items.json";
-	},
+	};
 
-	itemType: class extends _DataUtilPropConfig {
+	static itemType = class extends _DataUtilPropConfig {
 		static _PAGE = "itemType";
 
 		/**
@@ -6105,9 +6750,9 @@ globalThis.DataUtil = {
 			if (isMaintainCase) return out;
 			return out.toLowerCase();
 		}
-	},
+	};
 
-	itemProperty: class extends _DataUtilPropConfig {
+	static itemProperty = class extends _DataUtilPropConfig {
 		static _PAGE = "itemProperty";
 
 		/**
@@ -6137,9 +6782,9 @@ globalThis.DataUtil = {
 			if (isMaintainCase) return out;
 			return out.toLowerCase();
 		}
-	},
+	};
 
-	language: class extends _DataUtilPropConfigSingleSource {
+	static language = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_LANGUAGES;
 		static _FILENAME = "languages.json";
 
@@ -6163,24 +6808,24 @@ globalThis.DataUtil = {
 
 			return out;
 		}
-	},
+	};
 
-	languageFluff: class extends _DataUtilPropConfigSingleSource {
+	static languageFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_LANGUAGES;
 		static _FILENAME = "fluff-languages.json";
-	},
+	};
 
-	object: class extends _DataUtilPropConfigSingleSource {
+	static object = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_OBJECTS;
 		static _FILENAME = "objects.json";
-	},
+	};
 
-	objectFluff: class extends _DataUtilPropConfigSingleSource {
+	static objectFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_OBJECTS;
 		static _FILENAME = "fluff-objects.json";
-	},
+	};
 
-	race: class extends _DataUtilPropConfigSingleSource {
+	static race = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_RACES;
 		static _FILENAME = "races.json";
 
@@ -6259,16 +6904,17 @@ globalThis.DataUtil = {
 			out.forEach(it => it.__prop = "race");
 			return {race: out};
 		}
-	},
+	};
 
-	subrace: class extends _DataUtilPropConfig {
+	static subrace = class extends _DataUtilPropConfig {
 		static _PAGE = "subrace";
-	},
+	};
 
-	raceFluff: class extends _DataUtilPropConfigSingleSource {
+	static raceFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_RACES;
 		static _FILENAME = "fluff-races.json";
 
+		// N.b.: intentionally not applied to homebrew/prerelease content
 		static _getApplyUncommonMonstrous (data) {
 			data = MiscUtil.copyFast(data);
 			data.raceFluff
@@ -6297,13 +6943,78 @@ globalThis.DataUtil = {
 			const data = await super.loadUnmergedJSON();
 			return this._getApplyUncommonMonstrous(data);
 		}
-	},
+	};
 
-	raceFeature: class extends _DataUtilPropConfig {
+	static raceFeature = class extends _DataUtilPropConfig {
 		static _PAGE = "raceFeature";
-	},
 
-	recipe: class extends _DataUtilPropConfigSingleSource {
+		static _psLoadJson = {};
+
+		static async loadJSON ({isAddBaseRaces = false} = {}) {
+			const cacheKey = `site-${isAddBaseRaces}`;
+			DataUtil.raceFeature._psLoadJson[cacheKey] ||= (async () => {
+				const raceJson = await DataUtil.race.loadJSON({isAddBaseRaces});
+
+				return {
+					raceFeature: raceJson.race
+						.flatMap(race => {
+							return (race.entries || [])
+								.filter(ent => ent.name && ent.entries)
+								.map(ent => DataUtil.raceFeature.getFauxRaceFeature(race, ent));
+						}),
+				};
+			})();
+			return DataUtil.raceFeature._psLoadJson[cacheKey];
+		}
+
+		static getFauxRaceFeature (race, entry) {
+			return {
+				source: entry.source || race.source,
+				raceName: race.name,
+				raceSource: race.source,
+				_raceSubraceName: race._subraceName,
+				_raceBaseName: race._baseName,
+				_raceBaseSource: race._baseSource,
+				srd: !!(race.srd || race._baseSrd),
+				basicRules: !!race.basicRules,
+				page: entry.page ?? race.page,
+				...MiscUtil.copyFast(entry),
+				__prop: "raceFeature",
+			};
+		}
+
+		static unpackUid (uid, opts) {
+			opts = opts || {};
+			if (opts.isLower) uid = uid.toLowerCase();
+			let [name, raceName, raceSource, source, displayName] = uid.split("|").map(it => it.trim());
+			const sourceDefault = Parser.getTagSource("race");
+			raceSource ||= opts.isLower ? sourceDefault.toLowerCase() : sourceDefault;
+			source ||= opts.isLower ? sourceDefault.toLowerCase() : sourceDefault;
+			return {
+				name,
+				raceName,
+				raceSource,
+				source,
+				displayName,
+			};
+		}
+
+		static getUid (ent, opts) {
+			// <name>|<raceName>|<raceSource>|<source>
+			const sourceDefault = Parser.getTagSource("race");
+			const out = [
+				ent.name,
+				ent.raceName,
+				(ent.raceSource || "").toLowerCase() === sourceDefault.toLowerCase() ? "" : ent.source,
+				(ent.source || "").toLowerCase() === sourceDefault.toLowerCase() ? "" : ent.source,
+				opts?.displayName || "",
+			].join("|").replace(/\|+$/, ""); // Trim trailing pipes
+			if (opts?.isMaintainCase) return out;
+			return out.toLowerCase();
+		}
+	};
+
+	static recipe = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_RECIPES;
 		static _FILENAME = "recipes.json";
 
@@ -6326,34 +7037,34 @@ globalThis.DataUtil = {
 				recipe: await DataLoader.pCacheAndGetAllBrew("recipe"),
 			};
 		}
-	},
+	};
 
-	recipeFluff: class extends _DataUtilPropConfigSingleSource {
+	static recipeFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_RECIPES;
 		static _FILENAME = "fluff-recipes.json";
-	},
+	};
 
-	vehicle: class extends _DataUtilPropConfigSingleSource {
+	static vehicle = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_VEHICLES;
 		static _FILENAME = "vehicles.json";
-	},
+	};
 
-	vehicleFluff: class extends _DataUtilPropConfigSingleSource {
+	static vehicleFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_VEHICLES;
 		static _FILENAME = "fluff-vehicles.json";
-	},
+	};
 
-	optionalfeature: class extends _DataUtilPropConfigSingleSource {
+	static optionalfeature = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_OPT_FEATURES;
 		static _FILENAME = "optionalfeatures.json";
-	},
+	};
 
-	optionalfeatureFluff: class extends _DataUtilPropConfigSingleSource {
+	static optionalfeatureFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_OPT_FEATURES;
 		static _FILENAME = "fluff-optionalfeatures.json";
-	},
+	};
 
-	class: class clazz extends _DataUtilPropConfigCustom {
+	static class = class clazz extends _DataUtilPropConfigCustom {
 		static _PAGE = UrlUtil.PG_CLASSES;
 
 		static _pLoadJson = null;
@@ -6525,21 +7236,24 @@ globalThis.DataUtil = {
 			return DataUtil.class._CACHE_SUBCLASS_LOOKUP;
 		}
 		// endregion
-	},
+	};
 
-	classFeature: class extends _DataUtilPropConfigMultiSource {
+	static classFeature = class extends _DataUtilPropConfigMultiSource {
 		static _PAGE = "classFeature";
 		static _DIR = "class";
 		static _PROP = "classFeature";
-	},
 
-	classFluff: class extends _DataUtilPropConfigMultiSource {
+		static unpackUid (uid, opts) { return DataUtil.class.unpackUidClassFeature(uid, opts); }
+		static getUid (ent, opts) { return DataUtil.class.packUidClassFeature(ent, opts); }
+	};
+
+	static classFluff = class extends _DataUtilPropConfigMultiSource {
 		static _PAGE = UrlUtil.PG_CLASSES;
 		static _DIR = "class";
 		static _PROP = "classFluff";
-	},
+	};
 
-	subclass: class extends _DataUtilPropConfigCustom {
+	static subclass = class extends _DataUtilPropConfigCustom {
 		static _PAGE = "subclass";
 		static _PROP = "subclassFluff";
 
@@ -6556,21 +7270,24 @@ globalThis.DataUtil = {
 			// <shortName>|<className>|<classSource>|<source>
 			return DataUtil.class.packUidSubclass(ent, {isMaintainCase, displayName});
 		}
-	},
+	};
 
-	subclassFeature: class extends _DataUtilPropConfigMultiSource {
+	static subclassFeature = class extends _DataUtilPropConfigMultiSource {
 		static _PAGE = "subclassFeature";
 		static _DIR = "class";
 		static _PROP = "subclassFeature";
-	},
 
-	subclassFluff: class extends _DataUtilPropConfigMultiSource {
+		static unpackUid (uid, opts) { return DataUtil.class.unpackUidSubclassFeature(uid, opts); }
+		static getUid (ent, opts) { return DataUtil.class.packUidSubclassFeature(ent, opts); }
+	};
+
+	static subclassFluff = class extends _DataUtilPropConfigMultiSource {
 		static _PAGE = "subclassFluff";
 		static _DIR = "class";
 		static _PROP = "subclassFluff";
-	},
+	};
 
-	deity: class extends _DataUtilPropConfigSingleSource {
+	static deity = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_DEITIES;
 		static _FILENAME = "deities.json";
 
@@ -6587,7 +7304,7 @@ globalThis.DataUtil = {
 				data.deity.filter(it => it.source === src).forEach(it => inSource[src][it.reprintAlias || it.name] = it); // TODO need to handle similar names
 			});
 
-			const laterPrinting = [PRINT_ORDER.last()];
+			const laterPrinting = [PRINT_ORDER.at(-1)];
 			[...PRINT_ORDER].reverse().slice(1).forEach(src => {
 				laterPrinting.forEach(laterSrc => {
 					Object.keys(inSource[src]).forEach(name => {
@@ -6656,9 +7373,9 @@ globalThis.DataUtil = {
 			if (isMaintainCase) return out;
 			return out.toLowerCase();
 		}
-	},
+	};
 
-	table: class extends _DataUtilPropConfigCustom {
+	static table = class extends _DataUtilPropConfigCustom {
 		static async loadJSON () {
 			const datas = await Promise.all([
 				`${Renderer.get().baseUrl}data/generated/gendata-tables.json`,
@@ -6675,18 +7392,18 @@ globalThis.DataUtil = {
 
 			return combined;
 		}
-	},
+	};
 
-	legendaryGroup: class extends _DataUtilPropConfigSingleSource {
+	static legendaryGroup = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_BESTIARY;
 		static _FILENAME = "bestiary/legendarygroups.json";
 
 		static async pLoadAll () {
 			return (await this.loadJSON()).legendaryGroup;
 		}
-	},
+	};
 
-	variantrule: class extends _DataUtilPropConfigSingleSource {
+	static variantrule = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_VARIANTRULES;
 		static _FILENAME = "variantrules.json";
 
@@ -6696,9 +7413,9 @@ globalThis.DataUtil = {
 
 			return {variantrule: [...rawData.variantrule, ...rawDataGenerated.variantrule]};
 		}
-	},
+	};
 
-	deck: class extends _DataUtilPropConfigCustom {
+	static deck = class extends _DataUtilPropConfigCustom {
 		static _PAGE = UrlUtil.PG_DECKS;
 
 		static _pLoadJson = null;
@@ -6749,54 +7466,54 @@ globalThis.DataUtil = {
 				displayText,
 			};
 		}
-	},
+	};
 
-	reward: class extends _DataUtilPropConfigSingleSource {
+	static reward = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_REWARDS;
 		static _FILENAME = "rewards.json";
-	},
+	};
 
-	rewardFluff: class extends _DataUtilPropConfigSingleSource {
+	static rewardFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_REWARDS;
 		static _FILENAME = "fluff-rewards.json";
-	},
+	};
 
-	trap: class extends _DataUtilPropConfigSingleSource {
+	static trap = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_TRAPS_HAZARDS;
 		static _FILENAME = "trapshazards.json";
-	},
+	};
 
-	trapFluff: class extends _DataUtilPropConfigSingleSource {
+	static trapFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_TRAPS_HAZARDS;
 		static _FILENAME = "fluff-trapshazards.json";
-	},
+	};
 
-	hazard: class extends _DataUtilPropConfigSingleSource {
+	static hazard = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_TRAPS_HAZARDS;
 		static _FILENAME = "trapshazards.json";
-	},
+	};
 
-	hazardFluff: class extends _DataUtilPropConfigSingleSource {
+	static hazardFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_TRAPS_HAZARDS;
 		static _FILENAME = "fluff-trapshazards.json";
-	},
+	};
 
-	action: class extends _DataUtilPropConfigSingleSource {
+	static action = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_ACTIONS;
 		static _FILENAME = "actions.json";
-	},
+	};
 
-	facility: class extends _DataUtilPropConfigSingleSource {
+	static facility = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_BASTIONS;
 		static _FILENAME = "bastions.json";
-	},
+	};
 
-	facilityFluff: class extends _DataUtilPropConfigSingleSource {
+	static facilityFluff = class extends _DataUtilPropConfigSingleSource {
 		static _PAGE = UrlUtil.PG_BASTIONS;
 		static _FILENAME = "fluff-bastions.json";
-	},
+	};
 
-	quickreference: {
+	static quickreference = {
 		/**
 		 * @param uid
 		 * @param [opts]
@@ -6816,10 +7533,10 @@ globalThis.DataUtil = {
 				displayText,
 			};
 		},
-	},
+	};
 
-	brew: new _DataUtilBrewHelper({defaultUrlRoot: VeCt.URL_ROOT_BREW}),
-	prerelease: new _DataUtilBrewHelper({defaultUrlRoot: VeCt.URL_ROOT_PRERELEASE}),
+	static brew = new _DataUtilBrewHelper({defaultUrlRoot: VeCt.URL_ROOT_BREW});
+	static prerelease = new _DataUtilBrewHelper({defaultUrlRoot: VeCt.URL_ROOT_PRERELEASE});
 };
 
 // ROLLING =============================================================================================================
@@ -6873,7 +7590,7 @@ globalThis.RollerUtil = {
 	 * Result in range: 0 to (max-1); inclusive
 	 * e.g. roll(20) gives results ranging from 0 to 19
 	 * @param max range max (exclusive)
-	 * @param fn funciton to call to generate random numbers
+	 * @param fn function to call to generate random numbers
 	 * @returns {number} rolled
 	 */
 	roll (max, fn = Math.random) {
@@ -6888,11 +7605,26 @@ globalThis.RollerUtil = {
 
 		colLabel = mDice ? mDice.groups.exp : Renderer.stripTags(colLabel);
 
-		if (Renderer.dice.lang.getTree3(colLabel)) return RollerUtil.ROLL_COL_STANDARD;
+		const pts = mDice
+			? colLabel
+				.split(";")
+				.map(it => it.trim())
+				.filter(Boolean)
+			: [colLabel];
+
+		if (pts.every(pt => !!Renderer.dice.lang.getTree3(pt))) return RollerUtil.ROLL_COL_STANDARD;
 
 		// Remove trailing variables, if they exist
-		colLabel = colLabel.replace(RollerUtil._REGEX_ROLLABLE_COL_LABEL, "$1");
-		if (Renderer.dice.lang.getTree3(colLabel)) return RollerUtil.ROLL_COL_VARIABLE;
+		if (
+			pts
+				.every(pt => {
+					return !!Renderer.dice.lang.getTree3(
+						pt
+							.replace(RollerUtil._REGEX_ROLLABLE_COL_LABEL, "$1")
+							.replace(RollerUtil._REGEX_ROLLABLE_COL_TRAILING_VARIABLE, "$1"),
+					);
+				})
+		) return RollerUtil.ROLL_COL_VARIABLE;
 
 		return RollerUtil.ROLL_COL_NONE;
 	},
@@ -6918,6 +7650,7 @@ RollerUtil.DICE_REGEX_FULLMATCH = new RegExp(`^\\s*${RollerUtil._DICE_REGEX_STR}
 RollerUtil.REGEX_DAMAGE_DICE = /(?<average>\d+)(?<prefix> \((?:{@dice |{@damage ))(?<diceExp>[-+0-9d ]*)(?<suffix>}\)(?:\s*\+\s*the spell's level)? [a-z]+( \([-a-zA-Z0-9 ]+\))?( or [a-z]+( \([-a-zA-Z0-9 ]+\))?)? damage)/gi;
 RollerUtil.REGEX_DAMAGE_FLAT = /(?<prefix>Hit(?: or Miss)?: |Miss: |{@hom}|{@h}|{@m})(?<flatVal>[0-9]+)(?<suffix> [a-z]+( \([-a-zA-Z0-9 ]+\))?( or [a-z]+( \([-a-zA-Z0-9 ]+\))?)? damage)/gi;
 RollerUtil._REGEX_ROLLABLE_COL_LABEL = /^(.*?\d)(\s*[-+/*^×÷]\s*)([a-zA-Z0-9 ]+)$/;
+RollerUtil._REGEX_ROLLABLE_COL_TRAILING_VARIABLE = /^(.*?\d)(\s*[-+/*^×÷]\s*)(#\$.*?\$#)$/;
 RollerUtil.ROLL_COL_NONE = 0;
 RollerUtil.ROLL_COL_STANDARD = 1;
 RollerUtil.ROLL_COL_VARIABLE = 2;
@@ -7430,10 +8163,6 @@ globalThis.CollectionUtil = {
 		return true;
 	},
 
-	setDiff (set1, set2) {
-		return new Set([...set1].filter(it => !set2.has(it)));
-	},
-
 	objectDiff (obj1, obj2) {
 		const out = {};
 
@@ -7825,7 +8554,7 @@ Array.prototype.nextWrap || Object.defineProperty(Array.prototype, "nextWrap", {
 		if (~ix) {
 			if (ix + 1 < this.length) return this[ix + 1];
 			else return this[0];
-		} else return this.last();
+		} else return this.at(-1);
 	},
 });
 
@@ -7836,7 +8565,7 @@ Array.prototype.prevWrap || Object.defineProperty(Array.prototype, "prevWrap", {
 		const ix = this.indexOf(item);
 		if (~ix) {
 			if (ix - 1 >= 0) return this[ix - 1];
-			else return this.last();
+			else return this.at(-1);
 		} else return this[0];
 	},
 });
@@ -7904,8 +8633,8 @@ Map.prototype.getOrSet || Object.defineProperty(Map.prototype, "getOrSet", {
  *
  * @param opts Options object.
  * @param opts.hashKey to use in the URL so that forward/back can open/close the view
- * @param opts.$btnOpen jQuery-selected button to bind click open/close
- * @param [opts.$eleNoneVisible] "error" message to display if user has not selected any viewable content
+ * @param opts.btnOpen jQuery-selected button to bind click open/close
+ * @param [opts.eleNoneVisible] "error" message to display if user has not selected any viewable content
  * @param opts.pageTitle Title.
  * @param opts.state State to modify when opening/closing.
  * @param opts.stateKey Key in state to set true/false when opening/closing.
@@ -7927,17 +8656,17 @@ class BookModeViewBase {
 
 	constructor (opts) {
 		opts = opts || {};
-		const {$btnOpen, state} = opts;
+		const {btnOpen, state} = opts;
 
 		if (this._hashKey && this._stateKey) throw new Error(`Only one of "hashKey" and "stateKey" may be specified!`);
 
 		this._state = state;
-		this._$btnOpen = $btnOpen;
+		this._btnOpen = e_({ele: btnOpen});
 
 		this._isActive = false;
-		this._$wrpBook = null;
+		this._wrpBook = null;
 
-		this._$btnOpen.off("click").on("click", () => this.setStateOpen());
+		this._btnOpen.onn("click", () => this.setStateOpen());
 	}
 
 	/* -------------------------------------------- */
@@ -7954,67 +8683,75 @@ class BookModeViewBase {
 
 	/* -------------------------------------------- */
 
-	_$getWindowHeaderLhs () {
-		return $(`<div class="ve-flex-v-center"></div>`);
+	_getWindowHeaderLhs () {
+		return ee`<div class="ve-flex-v-center"></div>`;
 	}
 
-	_$getBtnWindowClose () {
-		return $(`<button class="ve-btn ve-btn-xs ve-btn-danger br-0 bt-0 btl-0 btr-0 bbr-0 bbl-0 h-20p" title="Close"><span class="glyphicon glyphicon-remove"></span></button>`)
-			.click(() => this.setStateClosed());
+	_getBtnWindowClose () {
+		return ee`<button class="ve-btn ve-btn-xs ve-btn-danger br-0 bt-0 btl-0 btr-0 bbr-0 bbl-0 h-20p" title="Close"><span class="glyphicon glyphicon-remove"></span></button>`
+			.onn("click", () => this.setStateClosed());
 	}
 
 	/* -------------------------------------------- */
 
-	async _$pGetWrpControls ({$wrpContent}) {
-		const $wrp = $(`<div class="w-100 ve-flex-col no-shrink no-print"></div>`);
+	async _pGetWrpControls ({wrpContent}) {
+		const wrp = ee`<div class="w-100 ve-flex-col no-shrink no-print"></div>`;
 
-		if (!this._hasPrintColumns) return $wrp;
+		if (!this._hasPrintColumns) return {wrp};
 
-		$wrp.addClass("px-2 mt-2 bb-1p pb-1");
+		["px-2", "mt-2", "bb-1p", "pb-1"].forEach(clz => wrp.addClass(clz));
 
 		const onChangeColumnCount = (cols) => {
-			$wrpContent.toggleClass(`bkmv__wrp--columns-1`, cols === 1);
-			$wrpContent.toggleClass(`bkmv__wrp--columns-2`, cols === 2);
+			wrpContent.toggleClass(`bkmv__wrp--columns-1`, cols === 1);
+			wrpContent.toggleClass(`bkmv__wrp--columns-2`, cols === 2);
 		};
 
 		const lastColumns = StorageUtil.syncGetForPage(BookModeViewBase._BOOK_VIEW_COLUMNS_K);
 
-		const $selColumns = $(`<select class="form-control input-sm">
+		const onChangeSelColumns = () => {
+			const val = Number(selColumns.val());
+			if (val === 0) onChangeColumnCount(2);
+			else onChangeColumnCount(1);
+
+			StorageUtil.syncSetForPage(BookModeViewBase._BOOK_VIEW_COLUMNS_K, val);
+		};
+
+		const selColumns = ee`<select class="form-control input-sm">
 			<option value="0">Two (book style)</option>
 			<option value="1">One</option>
-		</select>`)
-			.change(() => {
-				const val = Number($selColumns.val());
-				if (val === 0) onChangeColumnCount(2);
-				else onChangeColumnCount(1);
+		</select>`
+			.onn("change", () => onChangeSelColumns());
+		selColumns.val(`${lastColumns ?? 0}`);
+		onChangeSelColumns();
 
-				StorageUtil.syncSetForPage(BookModeViewBase._BOOK_VIEW_COLUMNS_K, val);
-			});
-		if (lastColumns != null) $selColumns.val(lastColumns);
-		$selColumns.change();
+		const wrpPrint = ee`<div class="w-100 ve-flex">
+			<div class="ve-flex-vh-center"><div class="mr-2 no-wrap help-subtle" title="Applied when printing the page.">Print columns:</div>${selColumns}</div>
+		</div>`.appendTo(wrp);
 
-		const $wrpPrint = $$`<div class="w-100 ve-flex">
-			<div class="ve-flex-vh-center"><div class="mr-2 no-wrap help-subtle" title="Applied when printing the page.">Print columns:</div>${$selColumns}</div>
-		</div>`.appendTo($wrp);
-
-		return {$wrp, $wrpPrint};
+		return {wrp, wrpPrint};
 	}
 
 	/* -------------------------------------------- */
 
-	_$getEleNoneVisible () { return null; }
+	_getEleNoneVisible () { return null; }
 
-	_$getBtnNoneVisibleClose () {
-		return $(`<button class="ve-btn ve-btn-default">Close</button>`)
-			.click(() => this.setStateClosed());
+	_getBtnNoneVisibleClose () {
+		return ee`<button class="ve-btn ve-btn-default">Close</button>`
+			.onn("click", () => this.setStateClosed());
 	}
 
 	/** @abstract */
-	async _pGetRenderContentMeta ({$wrpContent, $wrpContentOuter}) {
+	async _pGetRenderContentMeta ({wrpContent, wrpContentOuter}) {
 		return {cntSelectedEnts: 0, isAnyEntityRendered: false};
 	}
 
 	/* -------------------------------------------- */
+
+	async pInit () {
+		await this._pInit();
+	}
+
+	async _pInit () { /* Implement as required */ }
 
 	async pOpen () {
 		if (this._isActive) return;
@@ -8024,33 +8761,43 @@ class BookModeViewBase {
 		document.body.style.overflow = "hidden";
 		document.body.classList.add("bkmv-active");
 
-		const {$wrpContentOuter, $wrpContent} = await this._pGetContentElementMetas();
+		await this._pRender();
+	}
 
-		this._$wrpBook = $$`<div class="bkmv print__h-initial ve-flex-col print__ve-block">
-			<div class="bkmv__spacer-name no-print split-v-center no-shrink no-print">${this._$getWindowHeaderLhs()}${this._$getBtnWindowClose()}</div>
-			${(await this._$pGetWrpControls({$wrpContent})).$wrp}
-			${$wrpContentOuter}
+	_preRender () { /* Implement as required */ }
+
+	async _pRender () {
+		this._preRender();
+
+		const {wrpContentOuter, wrpContent} = await this._pGetContentElementMetas();
+
+		if (this._wrpBook) this._wrpBook.remove();
+
+		this._wrpBook = ee`<div class="bkmv print__h-initial ve-flex-col print__ve-block">
+			<div class="bkmv__spacer-name no-print split-v-center no-shrink no-print">${this._getWindowHeaderLhs()}${this._getBtnWindowClose()}</div>
+			${(await this._pGetWrpControls({wrpContent})).wrp}
+			${wrpContentOuter}
 		</div>`
 			.appendTo(document.body);
 	}
 
 	async _pGetContentElementMetas () {
-		const $wrpContent = $(`<div class="bkmv__scroller smooth-scroll ve-overflow-y-auto print__overflow-visible ${this._isColumns ? "bkmv__wrp" : "ve-flex-col"} w-100 min-h-0"></div>`);
+		const wrpContent = ee`<div class="bkmv__scroller smooth-scroll ve-overflow-y-auto print__overflow-visible ${this._isColumns ? "bkmv__wrp" : "ve-flex-col"} w-100 min-h-0"></div>`;
 
-		const $wrpContentOuter = $$`<div class="h-100 print__h-initial w-100 min-h-0 ve-flex-col print__ve-block">${$wrpContent}</div>`;
+		const wrpContentOuter = ee`<div class="h-100 print__h-initial w-100 min-h-0 ve-flex-col print__ve-block">${wrpContent}</div>`;
 
 		const out = {
-			$wrpContentOuter,
-			$wrpContent,
+			wrpContentOuter,
+			wrpContent,
 		};
 
-		const {cntSelectedEnts, isAnyEntityRendered} = await this._pGetRenderContentMeta({$wrpContent, $wrpContentOuter});
+		const {cntSelectedEnts, isAnyEntityRendered} = await this._pGetRenderContentMeta({wrpContent, wrpContentOuter});
 
-		if (isAnyEntityRendered) $wrpContentOuter.append($wrpContent);
+		if (isAnyEntityRendered) wrpContentOuter.appends(wrpContent);
 
 		if (cntSelectedEnts) return out;
 
-		$wrpContentOuter.append(this._$getEleNoneVisible());
+		wrpContentOuter.appends(this._getEleNoneVisible());
 
 		return out;
 	}
@@ -8061,7 +8808,7 @@ class BookModeViewBase {
 		document.body.style.overflow = "";
 		document.body.classList.remove("bkmv-active");
 
-		this._$wrpBook.remove();
+		this._wrpBook.remove();
 		this._isActive = false;
 	}
 
@@ -8376,7 +9123,7 @@ globalThis.VeLock = function ({name = null, isDbg = false} = {}) {
 		lockMeta.unlock();
 	};
 };
-ExcludeUtil._lock = new VeLock();
+ExcludeUtil._lock = new VeLock({name: "blocklist"});
 
 // DATETIME ============================================================================================================
 globalThis.DatetimeUtil = {
@@ -8438,16 +9185,29 @@ DatetimeUtil._SECS_PER_DAY = 86400;
 DatetimeUtil._SECS_PER_HOUR = 3600;
 DatetimeUtil._SECS_PER_MINUTE = 60;
 
-globalThis.EditorUtil = {
-	getTheme () {
+globalThis.EditorUtil = class {
+	static getTheme () {
 		const {isNight} = styleSwitcher.getSummary();
 		return isNight ? "ace/theme/tomorrow_night" : "ace/theme/textmate";
-	},
+	}
 
-	initEditor (id, additionalOpts = null) {
+	static _P_LOADING_ACE = null;
+
+	static async _pLoadAce () {
+		if (typeof ace !== "undefined") return;
+
+		return this._P_LOADING_ACE ||= (async () => {
+			await import("../lib/ace.js");
+			ace.config.set("basePath", "../lib");
+		})();
+	}
+
+	static async pInitEditor (eleOrId, additionalOpts = null) {
+		await this._pLoadAce();
+
 		additionalOpts = additionalOpts || {};
 
-		const editor = ace.edit(id);
+		const editor = ace.edit(eleOrId);
 		editor.setOptions({
 			theme: EditorUtil.getTheme(),
 			wrap: true,
@@ -8473,7 +9233,7 @@ globalThis.EditorUtil = {
 		styleSwitcher.addFnOnChange(() => editor.setOptions({theme: EditorUtil.getTheme()}));
 
 		return editor;
-	},
+	}
 };
 
 globalThis.BrowserUtil = class {
@@ -8483,7 +9243,7 @@ globalThis.BrowserUtil = class {
 };
 
 // MISC WEBPAGE ONLOADS ================================================================================================
-if (!IS_VTT && typeof window !== "undefined") {
+if (!globalThis.IS_VTT && typeof window !== "undefined") {
 	window.addEventListener("load", () => {
 		const docRoot = document.querySelector(":root");
 
@@ -8507,6 +9267,8 @@ if (!IS_VTT && typeof window !== "undefined") {
 	});
 
 	// region Cancer
+	const isDbgCancer = false;
+
 	if (location.hostname.endsWith(VeCt.LOC_HOSTNAME_CANCER)) {
 		const ivsCancer = [];
 		let anyFound = false;
@@ -8554,12 +9316,14 @@ if (!IS_VTT && typeof window !== "undefined") {
 			ivsCancer.forEach(iv => clearInterval(iv));
 		}, 6500);
 	} else {
-		window.addEventListener("load", () => $(`.cancer__anchor`).remove());
+		if (!isDbgCancer) window.addEventListener("load", () => $(`.cancer__anchor`).remove());
 	}
 
-	// window.addEventListener("load", () => {
-	// 	$(`.cancer__sidebar-inner--top`).append(`<div style="width: 300px; height: 600px; background: #f0f;"></div>`);
-	// 	$(`.cancer__sidebar-inner--bottom`).append(`<div style="width: 300px; height: 600px; background: #f0f;"></div>`);
-	// });
+	if (isDbgCancer) {
+		window.addEventListener("load", () => {
+			$(`.cancer__sidebar-inner--top`).append(`<div style="width: 300px; height: 600px; background: #f0f;"></div>`);
+			$(`.cancer__sidebar-inner--bottom`).append(`<div style="width: 300px; height: 600px; background: #f0f;"></div>`);
+		});
+	}
 	// endregion
 }

@@ -232,8 +232,8 @@ class PageFilterBestiary extends PageFilterBase {
 			max: 9,
 			displayFn: it => Parser.getOrdinalForm(it),
 		});
-		this._spellKnownFilter = new SearchableFilter({header: "Spells Known", displayFn: (it) => it.split("|")[0].toTitleCase(), itemSortFn: SortUtil.ascSortLower});
-		this._equipmentFilter = new SearchableFilter({header: "Equipment", displayFn: (it) => it.split("|")[0].toTitleCase(), itemSortFn: SortUtil.ascSortLower});
+		this._spellKnownFilter = new SearchableFilter({header: "Spells Known", displayFn: (it) => it.toTitleCase(), itemSortFn: SortUtil.ascSortLower});
+		this._equipmentFilter = new SearchableFilter({header: "Equipment", displayFn: (it) => it.toTitleCase(), itemSortFn: SortUtil.ascSortLower});
 		this._dragonAgeFilter = new Filter({
 			header: "Dragon Age",
 			items: [...PageFilterBestiary._DRAGON_AGES],
@@ -322,7 +322,6 @@ class PageFilterBestiary extends PageFilterBase {
 			if (legGroup.regionalEffects) mon._fMisc.push("Regional Effects");
 		}
 		if (mon.variant) mon._fMisc.push("Has Variants");
-		if (mon._isCopy) mon._fMisc.push("Modified Copy");
 		if (mon.altArt) mon._fMisc.push("Has Alternate Token");
 		if (Renderer.monster.hasToken(mon)) mon._fMisc.push("Has Token");
 		if (this._hasFluff(mon)) mon._fMisc.push("Has Info");
@@ -404,9 +403,7 @@ class PageFilterBestiary extends PageFilterBase {
 
 	static _getSpellcasterMeta_stringHandler (spellSet, str) {
 		str.replace(PageFilterBestiary._RE_SPELL_TAG, (...m) => {
-			const parts = m[1].split("|").slice(0, 2);
-			parts[1] = parts[1] || Parser.SRC_PHB;
-			spellSet.add(parts.join("|").toLowerCase());
+			spellSet.add(DataUtil.proxy.unpackUid("spell", m[1], "spell", {isLower: true}).name);
 			return "";
 		});
 	}
@@ -469,8 +466,7 @@ class PageFilterBestiary extends PageFilterBase {
 	static _getEquipmentList_stringHandler (itemSet, str) {
 		str
 			.replace(PageFilterBestiary._RE_ITEM_TAG, (...m) => {
-				const unpacked = DataUtil.proxy.unpackUid("item", m[1], "item", {isLower: true});
-				itemSet.add(DataUtil.proxy.getUid("item", unpacked));
+				itemSet.add(DataUtil.proxy.unpackUid("item", m[1], "item", {isLower: true}).name);
 				return "";
 			});
 	}
@@ -663,7 +659,7 @@ class ModalFilterBestiary extends ModalFilterBase {
 
 	async _pLoadAllData () {
 		return [
-			...(await DataUtil.monster.pLoadAll()),
+			...(await DataLoader.pCacheAndGetAllSite(UrlUtil.PG_BESTIARY)),
 			...((await PrereleaseUtil.pGetBrewProcessed()).monster || []),
 			...((await BrewUtil2.pGetBrewProcessed()).monster || []),
 		];
@@ -691,7 +687,7 @@ class ModalFilterBestiary extends ModalFilterBase {
 			<div class="ve-col-4 px-1 ${mon._versionBase_isVersion ? "italic" : ""} ${this._getNameStyle()}">${mon._versionBase_isVersion ? `<span class="px-3"></span>` : ""}${mon.name}</div>
 			<div class="ve-col-4 px-1">${type}</div>
 			<div class="ve-col-2 px-1 ve-text-center">${cr}</div>
-			<div class="ve-col-1 ve-flex-h-center ${Parser.sourceJsonToSourceClassname(mon.source)} pl-1 pr-0" title="${Parser.sourceJsonToFull(mon.source)}" ${Parser.sourceJsonToStyle(mon.source)}>${source}${Parser.sourceJsonToMarkerHtml(mon.source)}</div>
+			<div class="ve-col-1 ve-flex-h-center ${Parser.sourceJsonToSourceClassname(mon.source)} pl-1 pr-0" title="${Parser.sourceJsonToFull(mon.source)}">${source}${Parser.sourceJsonToMarkerHtml(mon.source, {isList: true})}</div>
 		</div>`;
 
 		const btnShowHidePreview = eleRow.firstElementChild.children[1].firstElementChild;
@@ -704,7 +700,7 @@ class ModalFilterBestiary extends ModalFilterBase {
 				hash,
 				source,
 				sourceJson: mon.source,
-				page: mon.page,
+				...ListItem.getCommonValues(mon),
 				type,
 				cr,
 			},

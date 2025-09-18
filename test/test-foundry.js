@@ -5,79 +5,55 @@ import "../js/utils.js";
 import "../js/render.js";
 import "../js/render-dice.js";
 
-class TestFoundry {
-	static async pLoadData (originalFilename, originalPath) {
-		switch (originalFilename) {
-			case "races.json": {
-				ut.patchLoadJson();
-				const out = await DataUtil.race.loadJSON({isAddBaseRaces: true});
-				ut.unpatchLoadJson();
-				return out;
-			}
-
-			default: return ut.readJson(originalPath);
+const pLoadData = async (originalFilename, originalPath) => {
+	switch (originalFilename) {
+		case "races.json": {
+			ut.patchLoadJson();
+			const out = await DataUtil.race.loadJSON({isAddBaseRaces: true});
+			const outWithVersions = Object.fromEntries(
+				Object.entries(out)
+					.map(([prop, arr]) => {
+						return [prop, arr.flatMap(it => [it, ...DataUtil.proxy.getVersions(it.__prop, it)])];
+					}),
+			);
+			ut.unpatchLoadJson();
+			return outWithVersions;
 		}
+
+		default: return ut.readJson(originalPath);
+	}
+};
+
+class _DirectoryAdapter {
+	constructor ({dir, fileHandler}) {
+		this._dir = dir;
+		this._fileHandler = fileHandler;
 	}
 
-	static testClasses ({errors}) {
-		const classIndex = ut.readJson("./data/class/index.json");
-		const classFiles = Object.values(classIndex)
-			.map(file => ut.readJson(`./data/class/${file}`));
-
-		const uidsClass = new Set();
-		const uidsClassFeature = new Set();
-		const uidsSubclassFeature = new Set();
-
-		classFiles.forEach(data => {
-			(data.class || []).forEach(cls => {
-				const uid = UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_CLASSES](cls);
-				uidsClass.add(uid);
-			});
-
-			(data.classFeature || []).forEach(cf => {
-				const uid = UrlUtil.URL_TO_HASH_BUILDER["classFeature"](cf);
-				uidsClassFeature.add(uid);
-			});
-
-			(data.subclassFeature || []).forEach(scf => {
-				const uid = UrlUtil.URL_TO_HASH_BUILDER["subclassFeature"](scf);
-				uidsSubclassFeature.add(uid);
-			});
-		});
-
-		const foundryData = ut.readJson("./data/class/foundry.json");
-		(foundryData.class || []).forEach(cls => {
-			const uid = UrlUtil.URL_TO_HASH_BUILDER[UrlUtil.PG_CLASSES](cls);
-			if (!uidsClass.has(uid)) errors.push(`\tClass "${uid}" not found!`);
-		});
-		(foundryData.classFeature || []).forEach(fcf => {
-			const uid = UrlUtil.URL_TO_HASH_BUILDER["classFeature"](fcf);
-			if (!uidsClassFeature.has(uid)) errors.push(`\tClass feature "${uid}" not found!`);
-		});
-		(foundryData.subclassFeature || []).forEach(fscf => {
-			const uid = UrlUtil.URL_TO_HASH_BUILDER["subclassFeature"](fscf);
-			if (!uidsSubclassFeature.has(uid)) errors.push(`\tSubclass feature "${uid}" not found!`);
-		});
-	}
-
-	static async pTestDir ({errors, dir}) {
+	async pRun () {
 		const FOUNDRY_FILE = "foundry.json";
 
-		const dirList = fs.readdirSync(`./data/${dir}`)
+		const dirList = fs.readdirSync(`./data/${this._dir}`)
 			.filter(it => !it.startsWith("fluff-") && it !== "sources.json" && it !== "index.json");
 
-		if (!dirList.includes(FOUNDRY_FILE)) throw new Error(`No "${FOUNDRY_FILE}" file found in dir "${dir}"!`);
+		if (!dirList.includes(FOUNDRY_FILE)) throw new Error(`No "${FOUNDRY_FILE}" file found in dir "${this._dir}"!`);
 
-		const foundryPath = `./data/${dir}/${FOUNDRY_FILE}`;
+		const foundryPath = `./data/${this._dir}/${FOUNDRY_FILE}`;
 		const foundryData = ut.readJson(foundryPath);
 		const originalDatas = await dirList
 			.filter(it => it !== FOUNDRY_FILE)
-			.pSerialAwaitMap(it => this.pLoadData(it, `./data/${dir}/${it}`));
+			.pSerialAwaitMap(it => pLoadData(it, `./data/${this._dir}/${it}`));
 
-		await this.pTestFile({errors, foundryData, foundryPath, originalDatas});
+		await this._fileHandler.pHandleFile({foundryData, foundryPath, originalDatas});
+	}
+}
+
+class _RootAdapter {
+	constructor ({fileHandler}) {
+		this._fileHandler = fileHandler;
 	}
 
-	static async pTestRoot ({errors}) {
+	async pRun () {
 		const dirList = fs.readdirSync(`./data/`);
 		const foundryFiles = dirList.filter(it => it.startsWith("foundry-") && it.endsWith(".json"));
 
@@ -85,12 +61,67 @@ class TestFoundry {
 			const foundryPath = `./data/${foundryFile}`;
 			const foundryData = ut.readJson(foundryPath);
 			const originalFile = foundryFile.replace(/^foundry-/i, "");
-			const originalData = await this.pLoadData(originalFile, `./data/${originalFile}`);
+			const originalData = await pLoadData(originalFile, `./data/${originalFile}`);
 
-			await this.pTestFile({errors, foundryData, foundryPath, originalDatas: [originalData]});
+			await this._fileHandler.pHandleFile({foundryData, foundryPath, originalDatas: [originalData]});
 		}
 	}
+}
 
+/**
+ * @abstract
+ */
+class _FileHandlerBase {
+	/**
+	 * @abstract
+	 * @return void
+	 */
+	async pHandleFile ({foundryData, foundryPath, originalDatas}) { throw new Error("Unimplemented!"); }
+}
+
+class _FileHandlerInit extends _FileHandlerBase {
+	constructor ({scaleValues}) {
+		super();
+		this._scaleValues = scaleValues;
+	}
+
+	async pHandleFile ({foundryData, foundryPath, originalDatas}) {
+		// Populate available scale values
+		Object.entries(foundryData)
+			.forEach(([prop, arr]) => {
+				if (!(arr instanceof Array)) return;
+
+				arr
+					.filter(ent => ent.advancement?.length)
+					.forEach(ent => {
+						ent.advancement
+							.filter(advancement => ["ScaleValue"].includes(advancement.type))
+							.forEach(advancement => {
+								const identifier = advancement.configuration?.identifier || Parser.stringToSlug(advancement.title);
+								if (!identifier) throw new Error(`Expected "ScaleValue" to include "configuration.identifier" or "title"!`);
+
+								const meta = MiscUtil.getOrSet(this._scaleValues, Parser.stringToSlug(ent.name), identifier, {cntUses: 0, sources: new Set()});
+								meta.sources.add(SourceUtil.getEntitySource(ent));
+							});
+					});
+			});
+	}
+}
+
+class _FileHandlerTest extends _FileHandlerBase {
+	constructor ({tester, errors, scaleValues}) {
+		super();
+		this._tester = tester;
+		this._errors = errors;
+		this._scaleValues = scaleValues;
+	}
+
+	async pHandleFile ({foundryData, foundryPath, originalDatas}) {
+		await this._tester.pTestFile({errors: this._errors, foundryData, foundryPath, originalDatas, scaleValues: this._scaleValues});
+	}
+}
+
+class TestFoundry {
 	static testSpecialRaceFeatures ({foundryData, originalDatas, errors}) {
 		const uidsRaceFeature = new Set();
 
@@ -117,19 +148,54 @@ class TestFoundry {
 	}
 
 	static async pTestSpecialMagicItemVariants ({foundryData, originalDatas, errors}) {
-		const variants = await this.pLoadData("magicvariants.json", `./data/magicvariants.json`);
+		const variants = await pLoadData("magicvariants.json", `./data/magicvariants.json`);
 		const prop = "magicvariant";
 		this.doCompareData({prop, foundryData, originalDatas: [variants], errors});
 	}
 
 	static doCompareData ({prop, foundryData, originalDatas, errors}) {
 		foundryData[prop].forEach(it => {
-			const match = originalDatas.first(variants => variants[prop].find(og => og.name === it.name && (og?.inherits?.source ?? og.source) === it.source));
+			const match = originalDatas.first(variants => variants[prop]?.find(og => og.name === it.name && (og?.inherits?.source ?? og.source) === it.source));
 			if (!match) errors.push(`\t"${prop}" ${it.name} (${it.source}) not found!`);
 		});
 	}
 
-	static async pTestFile ({foundryPath, foundryData, originalDatas, errors}) {
+	/* -------------------------------------------- */
+
+	static _SCALE_VALUE_METAS = {
+		ignoresNotFound: {
+			[Parser.SRC_PHB]: new Set([
+				// Class; from the SRD
+				"@scale.monk.die",
+				"@scale.monk.unarmored-movement",
+
+				// Subclass; from the SRD
+				"@scale.order-domain.divine-strike",
+				"@scale.monk.die",
+			]),
+		},
+
+		ignoresNeverUsed: {
+			[Parser.SRC_TCE]: new Set([
+				"@scale.artificer.infusions",
+				"@scale.alchemist.elixir",
+			]),
+			[Parser.SRC_XPHB]: new Set([
+				// TODO(Future) utilize these
+				"@scale.druid.wild-shape",
+				"@scale.druid.known-forms",
+				"@scale.ranger.mark",
+
+				"@scale.arcane-trickster.max-prepared",
+				"@scale.eldritch-knight.cantrips",
+				"@scale.eldritch-knight.prepared",
+			]),
+		},
+	};
+
+	/* -------------------------------------------- */
+
+	static async _pTestFile_pTestMatchingEntitiesExist ({foundryPath, foundryData, originalDatas, errors}) {
 		Object.entries(foundryData)
 			.forEach(([prop, arr]) => {
 				if (SPECIAL_PROPS[prop]) return SPECIAL_PROPS[prop]({foundryPath, foundryData, originalDatas, errors});
@@ -140,6 +206,86 @@ class TestFoundry {
 				this.doCompareData({prop, foundryData, originalDatas, errors});
 			});
 	}
+
+	static _pTestFile_testScaleValueUtilization ({foundryPath, foundryData, originalDatas, errors, scaleValues}) {
+		const {ignoresNotFound} = this._SCALE_VALUE_METAS;
+		const walker = MiscUtil.getWalker({isNoModification: true});
+
+		Object.entries(foundryData)
+			.forEach(([prop, arr]) => {
+				if (!(arr instanceof Array)) return;
+
+				arr
+					.forEach(ent => {
+						this._pTestFile_testScaleValueUtilization_entity({
+							walker,
+							ent,
+							ignoresNotFound,
+							errors,
+							scaleValues,
+							prop,
+						});
+					});
+			});
+	}
+
+	static _pTestFile_testScaleValueUtilization_entity (
+		{
+			walker,
+			ent,
+			ignoresNotFound,
+			errors,
+			scaleValues,
+			prop,
+		},
+	) {
+		walker
+			.walk(
+				ent,
+				{
+					string: (str) => {
+						[...str.matchAll(/@scale\.(?<nameSlug>[-a-z]+)\.(?<scaleValueIdentifier>[-a-z]+)/g)]
+							.forEach(m => {
+								if (ignoresNotFound?.[ent.source]?.has(m[0])) return;
+
+								const {nameSlug, scaleValueIdentifier} = m.groups;
+
+								const valCur = MiscUtil.get(scaleValues, nameSlug, scaleValueIdentifier);
+								if (valCur == null) {
+									return errors.push(`\t"${prop}" ${ent.name} (${ent.source}) scale reference "${m[0]}" not found!`);
+								}
+
+								valCur.cntUses += 1;
+							});
+					},
+				},
+			);
+	}
+
+	static async pTestFile ({foundryPath, foundryData, originalDatas, errors, scaleValues}) {
+		await this._pTestFile_pTestMatchingEntitiesExist({foundryPath, foundryData, originalDatas, errors});
+		this._pTestFile_testScaleValueUtilization({foundryPath, foundryData, originalDatas, errors, scaleValues});
+	}
+
+	static async pPostProcess ({errors, scaleValues}) {
+		const {ignoresNeverUsed} = this._SCALE_VALUE_METAS;
+
+		Object.entries(scaleValues)
+			.forEach(([slugName, scaleValueIdentifierTo]) => {
+				Object.entries(scaleValueIdentifierTo)
+					.filter(([, {cntUses}]) => !cntUses)
+					.forEach(([scaleValueIdentifier, {sources}]) => {
+						const varName = `@scale.${slugName}.${scaleValueIdentifier}`;
+
+						sources
+							.forEach(source => {
+								if (ignoresNeverUsed?.[source]?.has(varName)) return;
+
+								errors.push(`\tScale value "${varName}" (${source}) is never used!`);
+							});
+					});
+			});
+	}
 }
 
 const SPECIAL_PROPS = {
@@ -148,16 +294,29 @@ const SPECIAL_PROPS = {
 };
 
 async function main () {
-	const errors = [];
+	// Arbitrary initial delay to allow IntelliJ console to properly init(?!)
+	await MiscUtil.pDelay(200);
 
-	TestFoundry.testClasses({errors});
-	await TestFoundry.pTestDir({dir: "spells", errors});
-	await TestFoundry.pTestRoot({errors});
+	const errors = [];
+	const scaleValues = {};
+
+	const fileHandlerInit = new _FileHandlerInit({scaleValues});
+
+	await (new _DirectoryAdapter({dir: "class", fileHandler: fileHandlerInit})).pRun();
+	await (new _DirectoryAdapter({dir: "spells", fileHandler: fileHandlerInit})).pRun();
+	await (new _RootAdapter({fileHandler: fileHandlerInit})).pRun();
+
+	const fileHandlerTest = new _FileHandlerTest({tester: TestFoundry, errors, scaleValues});
+
+	await (new _DirectoryAdapter({dir: "class", fileHandler: fileHandlerTest})).pRun();
+	await (new _DirectoryAdapter({dir: "spells", fileHandler: fileHandlerTest})).pRun();
+	await (new _RootAdapter({fileHandler: fileHandlerTest})).pRun();
+
+	await TestFoundry.pPostProcess({errors, scaleValues});
 
 	if (!errors.length) console.log("##### Foundry Tests Passed #####");
 	else {
-		console.error("Foundry data errors:");
-		errors.forEach(err => console.error(err));
+		console.error(`Foundry data errors:\n${errors.map(err => err).join("\n")}`);
 	}
 	return !errors.length;
 }

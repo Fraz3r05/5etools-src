@@ -1,3 +1,5 @@
+import {OmnisearchBacking} from "../../omnisearch/omnisearch-backing.js";
+
 class _MonstersToLoad {
 	constructor (
 		{
@@ -103,11 +105,11 @@ class _InitiativeTrackerMonsterAddCustomizer extends BaseComponent {
 			</label>`;
 		}
 
-		const $dispScaledCr = $(`<span class="inline-block"></span>`);
-		this._addHookBase("scaledCr", () => $dispScaledCr.text(this._state.scaledCr ? Parser.numberToCr(this._state.scaledCr) : `${(this._mon.cr.cr || this._mon.cr)} (default)`))();
+		const dispScaledCr = ee`<span class="ve-inline-block"></span>`;
+		this._addHookBase("scaledCr", () => dispScaledCr.txt(this._state.scaledCr ? Parser.numberToCr(this._state.scaledCr) : `${(this._mon.cr.cr || this._mon.cr)} (default)`))();
 
-		const $btnScaleCr = $(`<button class="ve-btn ve-btn-default ve-btn-xs mr-2"><span class="glyphicon glyphicon-signal"></span></button>`)
-			.on("click", async () => {
+		const btnScaleCr = ee`<button class="ve-btn ve-btn-default ve-btn-xs mr-2"><span class="glyphicon glyphicon-signal"></span></button>`
+			.onn("click", async () => {
 				const crBase = this._mon.cr.cr || this._mon.cr;
 
 				const cr = await InputUiUtil.pGetUserScaleCr({default: crBase});
@@ -125,8 +127,8 @@ class _InitiativeTrackerMonsterAddCustomizer extends BaseComponent {
 		return $$`<label class="split-v-center mb-2">
 			<span class="w-200p ve-text-right no-shrink mr-2 bold">CR:</span>
 			<span class="ve-flex-v-center mr-auto">
-				${$btnScaleCr}
-				${$dispScaledCr}
+				${btnScaleCr}
+				${dispScaledCr}
 			</span>
 		</label>`;
 	}
@@ -234,8 +236,7 @@ export class InitiativeTrackerMonsterAdd extends BaseComponent {
 		const {$modalInner, doClose, pGetResolved} = UiUtil.getShowModal();
 		rdState.cbDoClose = doClose;
 
-		const $iptSearch = $(`<input class="ui-search__ipt-search search form-control" autocomplete="off" placeholder="Search...">`)
-			.blurOnEsc();
+		const $iptSearch = $(`<input class="ui-search__ipt-search search form-control" autocomplete="off" placeholder="Search...">`);
 
 		$$`<div class="split no-shrink">
 			${$iptSearch}
@@ -273,7 +274,7 @@ export class InitiativeTrackerMonsterAdd extends BaseComponent {
 			const searchTerm = $iptSearch.val().trim();
 
 			const index = this._board.availContent["Creature"];
-			const results = await Omnisearch.pGetFilteredResults(
+			const results = await OmnisearchBacking.pGetFilteredResults(
 				index.search(searchTerm, {
 					fields: {
 						n: {boost: 5, expand: true},

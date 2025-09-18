@@ -485,7 +485,8 @@
 			"name": "Wizard",
 			"source": "XPHB",
 			"page": 164,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"edition": "one",
 			"primaryAbility": [
 				{
@@ -1373,6 +1374,7 @@
 				"Durable Magic|Wizard||War|XGE|10",
 				"Deflecting Shroud|Wizard||War|XGE|14"
 			],
+			"hasFluff": true,
 			"hasFluffImages": true
 		},
 		{
@@ -1716,6 +1718,51 @@
 							"counterspell|xphb",
 							"dispel magic|xphb"
 						]
+					},
+					"known": {
+						"3": [
+							{
+								"choose": "level=0;1;2|class=Wizard|school=A"
+							},
+							{
+								"choose": "level=0;1;2|class=Wizard|school=A"
+							}
+						],
+						"5": [
+							{
+								"choose": "level=0;1;2;3|class=Wizard|school=A"
+							}
+						],
+						"7": [
+							{
+								"choose": "level=0;1;2;3;4|class=Wizard|school=A"
+							}
+						],
+						"9": [
+							{
+								"choose": "level=0;1;2;3;4;5|class=Wizard|school=A"
+							}
+						],
+						"11": [
+							{
+								"choose": "level=0;1;2;3;4;5;6|class=Wizard|school=A"
+							}
+						],
+						"13": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7|class=Wizard|school=A"
+							}
+						],
+						"15": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7;8|class=Wizard|school=A"
+							}
+						],
+						"17": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7;8;9|class=Wizard|school=A"
+							}
+						]
 					}
 				}
 			],
@@ -1804,8 +1851,58 @@
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"page": 174,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"edition": "one",
+			"additionalSpells": [
+				{
+					"known": {
+						"3": [
+							{
+								"choose": "level=0;1;2|class=Wizard|school=V"
+							},
+							{
+								"choose": "level=0;1;2|class=Wizard|school=V"
+							}
+						],
+						"5": [
+							{
+								"choose": "level=0;1;2;3|class=Wizard|school=V"
+							}
+						],
+						"7": [
+							{
+								"choose": "level=0;1;2;3;4|class=Wizard|school=V"
+							}
+						],
+						"9": [
+							{
+								"choose": "level=0;1;2;3;4;5|class=Wizard|school=V"
+							}
+						],
+						"11": [
+							{
+								"choose": "level=0;1;2;3;4;5;6|class=Wizard|school=V"
+							}
+						],
+						"13": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7|class=Wizard|school=V"
+							}
+						],
+						"15": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7;8|class=Wizard|school=V"
+							}
+						],
+						"17": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7;8;9|class=Wizard|school=V"
+							}
+						]
+					}
+				}
+			],
 			"subclassFeatures": [
 				"Evoker|Wizard|XPHB|Evoker|XPHB|3",
 				"Sculpt Spells|Wizard|XPHB|Evoker|XPHB|6",
@@ -1826,7 +1923,48 @@
 				{
 					"known": {
 						"3": [
-							"minor illusion|xphb#c"
+							"minor illusion|xphb#c",
+							{
+								"choose": "level=0;1;2|class=Wizard|school=I"
+							},
+							{
+								"choose": "level=0;1;2|class=Wizard|school=I"
+							}
+						],
+						"5": [
+							{
+								"choose": "level=0;1;2;3|class=Wizard|school=I"
+							}
+						],
+						"7": [
+							{
+								"choose": "level=0;1;2;3;4|class=Wizard|school=I"
+							}
+						],
+						"9": [
+							{
+								"choose": "level=0;1;2;3;4;5|class=Wizard|school=I"
+							}
+						],
+						"11": [
+							{
+								"choose": "level=0;1;2;3;4;5;6|class=Wizard|school=I"
+							}
+						],
+						"13": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7|class=Wizard|school=I"
+							}
+						],
+						"15": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7;8|class=Wizard|school=I"
+							}
+						],
+						"17": [
+							{
+								"choose": "level=0;1;2;3;4;5;6;7;8;9|class=Wizard|school=I"
+							}
 						]
 					},
 					"prepared": {
@@ -2163,6 +2301,8 @@
 			"name": "Arcane Recovery",
 			"source": "XPHB",
 			"page": 155,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 1,
@@ -2175,6 +2315,8 @@
 			"name": "Ritual Adept",
 			"source": "XPHB",
 			"page": 155,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 1,
@@ -2186,6 +2328,8 @@
 			"name": "Spellcasting",
 			"source": "XPHB",
 			"page": 165,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 1,
@@ -2278,6 +2422,8 @@
 			"name": "Scholar",
 			"source": "XPHB",
 			"page": 166,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 2,
@@ -2289,6 +2435,8 @@
 			"name": "Wizard Subclass",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 3,
@@ -2300,6 +2448,8 @@
 			"name": "Ability Score Improvement",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 4,
@@ -2311,6 +2461,8 @@
 			"name": "Memorize Spell",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 5,
@@ -2322,6 +2474,8 @@
 			"name": "Subclass Feature",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 6,
@@ -2333,6 +2487,8 @@
 			"name": "Ability Score Improvement",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 8,
@@ -2344,6 +2500,8 @@
 			"name": "Subclass Feature",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 10,
@@ -2355,6 +2513,8 @@
 			"name": "Ability Score Improvement",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 12,
@@ -2366,6 +2526,8 @@
 			"name": "Subclass Feature",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 14,
@@ -2377,6 +2539,8 @@
 			"name": "Ability Score Improvement",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 16,
@@ -2388,6 +2552,8 @@
 			"name": "Spell Mastery",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 18,
@@ -2400,6 +2566,8 @@
 			"name": "Epic Boon",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 19,
@@ -2411,6 +2579,8 @@
 			"name": "Signature Spells",
 			"source": "XPHB",
 			"page": 167,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"level": 20,
@@ -3207,7 +3377,7 @@
 			"level": 14,
 			"header": 2,
 			"entries": [
-				"By 14th level, you have learned the secret of weaving shadow magic into your illusions to give them a semireality. When you cast an illusion spell of 1st level or higher, you can choose one inanimate, nonmagical object that is part of the illusion and make that object real. You can do this on your turn as a bonus action while the spell is ongoing. The object remains real for 1 minute. For example, you can create an illusion of a bridge over a chasm and then make it real long enough for your allies to cross.",
+				"By 14th level, you have learned the secret of weaving shadow magic into your illusions to give them a semi-reality. When you cast an illusion spell of 1st level or higher, you can choose one inanimate, nonmagical object that is part of the illusion and make that object real. You can do this on your turn as a bonus action while the spell is ongoing. The object remains real for 1 minute. For example, you can create an illusion of a bridge over a chasm and then make it real long enough for your allies to cross.",
 				"The object can't deal damage or otherwise directly harm anyone."
 			]
 		},
@@ -4113,7 +4283,9 @@
 				"subclassSource": "PHB",
 				"level": 2,
 				"_preserve": {
-					"page": true
+					"page": true,
+					"srd": true,
+					"basicRules": true
 				}
 			}
 		},
@@ -4297,7 +4469,7 @@
 			"level": 3,
 			"header": 1,
 			"entries": [
-				"Choose two Wizard spells from the Abjuration school, each of which must be no higher than level 2, and add them to your spellbook for free.",
+				"Choose two {@filter Wizard spells from the Abjuration school|spells|level=0;1;2|class=Wizard|school=A}, each of which must be no higher than level 2, and add them to your spellbook for free.",
 				"In addition, whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Abjuration school to your spellbook for free. The chosen spell must be of a level for which you have spell slots."
 			]
 		},
@@ -4484,7 +4656,8 @@
 			"name": "Evoker",
 			"source": "XPHB",
 			"page": 174,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"subclassShortName": "Evoker",
@@ -4507,7 +4680,8 @@
 			"name": "Evocation Savant",
 			"source": "XPHB",
 			"page": 174,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"subclassShortName": "Evoker",
@@ -4515,7 +4689,7 @@
 			"level": 3,
 			"header": 1,
 			"entries": [
-				"Choose two Wizard spells from the Evocation school, each of which must be no higher than level 2, and add them to your spellbook for free.",
+				"Choose two {@filter Wizard spells from the Evocation school|spells|level=0;1;2|class=Wizard|school=V}, each of which must be no higher than level 2, and add them to your spellbook for free.",
 				"In addition, whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Evocation school to your spellbook for free. The chosen spell must be of a level for which you have spell slots."
 			]
 		},
@@ -4523,7 +4697,8 @@
 			"name": "Potent Cantrip",
 			"source": "XPHB",
 			"page": 174,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"subclassShortName": "Evoker",
@@ -4538,7 +4713,8 @@
 			"name": "Sculpt Spells",
 			"source": "XPHB",
 			"page": 174,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"subclassShortName": "Evoker",
@@ -4553,7 +4729,8 @@
 			"name": "Empowered Evocation",
 			"source": "XPHB",
 			"page": 174,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"subclassShortName": "Evoker",
@@ -4568,7 +4745,8 @@
 			"name": "Overchannel",
 			"source": "XPHB",
 			"page": 174,
-			"freeRules2024": true,
+			"srd52": true,
+			"basicRules2024": true,
 			"className": "Wizard",
 			"classSource": "XPHB",
 			"subclassShortName": "Evoker",
@@ -4614,7 +4792,7 @@
 			"level": 3,
 			"header": 1,
 			"entries": [
-				"Choose two Wizard spells from the Illusion school, each of which must be no higher than level 2, and add them to your spellbook for free.",
+				"Choose two {@filter Wizard spells from the Illusion school|spells|level=0;1;2|class=Wizard|school=I}, each of which must be no higher than level 2, and add them to your spellbook for free.",
 				"In addition, whenever you gain access to a new level of spell slots in this class, you can add one Wizard spell from the Illusion school to your spellbook for free. The chosen spell must be of a level for which you have spell slots."
 			]
 		},

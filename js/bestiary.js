@@ -192,47 +192,48 @@ class BestiarySublistManager extends SublistManager {
 class BestiaryPageBookView extends ListPageBookView {
 	constructor (opts) {
 		super({
+			nameSingular: "creature",
 			namePlural: "creatures",
 			pageTitle: "Bestiary Printer View",
 			...opts,
 		});
 	}
 
-	async _$pGetWrpControls ({$wrpContent}) {
-		const out = await super._$pGetWrpControls({$wrpContent});
-		const {$wrpPrint} = out;
+	async _pGetWrpControls ({wrpContent}) {
+		const out = await super._pGetWrpControls({wrpContent});
+		const {wrpPrint} = out;
 
 		// region Markdown
 		// TODO refactor this and spell markdown section
 		const pGetAsMarkdown = async () => {
-			const toRender = this._bookViewToShow.length ? this._bookViewToShow : [this._fnGetEntLastLoaded()];
+			const toRender = this._bookViewToShow.length ? this._bookViewToShow.map(({entity}) => entity) : [this._fnGetEntLastLoaded()];
 			return RendererMarkdown.monster.pGetMarkdownDoc(toRender);
 		};
 
-		const $btnDownloadMarkdown = $(`<button class="ve-btn ve-btn-default ve-btn-sm">Download as Markdown</button>`)
-			.click(async () => DataUtil.userDownloadText("bestiary.md", await pGetAsMarkdown()));
+		const btnDownloadMarkdown = ee`<button class="ve-btn ve-btn-default ve-btn-sm">Download as Markdown</button>`
+			.onn("click", async () => DataUtil.userDownloadText("bestiary.md", await pGetAsMarkdown()));
 
-		const $btnCopyMarkdown = $(`<button class="ve-btn ve-btn-default ve-btn-sm px-2" title="Copy Markdown to Clipboard"><span class="glyphicon glyphicon-copy"></span></button>`)
-			.click(async () => {
+		const btnCopyMarkdown = ee`<button class="ve-btn ve-btn-default ve-btn-sm px-2" title="Copy Markdown to Clipboard"><span class="glyphicon glyphicon-copy"></span></button>`
+			.onn("click", async () => {
 				await MiscUtil.pCopyTextToClipboard(await pGetAsMarkdown());
-				JqueryUtil.showCopiedEffect($btnCopyMarkdown);
+				JqueryUtil.showCopiedEffect(btnCopyMarkdown);
 			});
 
-		const $btnDownloadMarkdownSettings = $(`<button class="ve-btn ve-btn-default ve-btn-sm px-2" title="Markdown Settings"><span class="glyphicon glyphicon-cog"></span></button>`)
-			.click(async () => RendererMarkdown.pShowSettingsModal());
+		const btnDownloadMarkdownSettings = ee`<button class="ve-btn ve-btn-default ve-btn-sm px-2" title="Markdown Settings"><span class="glyphicon glyphicon-cog"></span></button>`
+			.onn("click", async () => RendererMarkdown.pShowSettingsModal());
 
-		$$`<div class="ve-flex-v-center ve-btn-group ml-2">
-			${$btnDownloadMarkdown}
-			${$btnCopyMarkdown}
-			${$btnDownloadMarkdownSettings}
-		</div>`.appendTo($wrpPrint);
+		ee`<div class="ve-flex-v-center ve-btn-group ml-2">
+			${btnDownloadMarkdown}
+			${btnCopyMarkdown}
+			${btnDownloadMarkdownSettings}
+		</div>`.appendTo(wrpPrint);
 		// endregion
 
 		return out;
 	}
 
-	async _pGetRenderContentMeta ({$wrpContent}) {
-		this._bookViewToShow = this._sublistManager.getPinnedEntities()
+	async _pGetRenderContentMeta ({wrpContent}) {
+		this._bookViewToShow = this._sublistManager.getSublistedEntityMetas()
 			.sort(this._getSorted.bind(this));
 
 		let cntSelectedEnts = 0;
@@ -247,18 +248,23 @@ class BestiaryPageBookView extends ListPageBookView {
 			stack.push(`</tbody></table></div>`);
 		};
 
-		this._bookViewToShow.forEach(mon => renderCreature(mon));
+		this._bookViewToShow
+			.filter(Boolean)
+			.forEach(({entity, count}) => Array.from({length: this._comp._state.isRenderCopies ? count : 1}, () => renderCreature(entity)));
+
 		if (!this._bookViewToShow.length && Hist.lastLoadedId != null) {
 			renderCreature(this._fnGetEntLastLoaded());
 		}
 
 		cntSelectedEnts += this._bookViewToShow.length;
-		$wrpContent.append(stack.join(""));
+		wrpContent.appends(stack.join(""));
 
 		return {cntSelectedEnts, isAnyEntityRendered};
 	}
 
 	_getSorted (a, b) {
+		a = a.entity;
+		b = b.entity;
 		return SortUtil.ascSort(a._displayName || a.name, b._displayName || b.name);
 	}
 }
@@ -273,7 +279,7 @@ class BestiaryPage extends ListPageMultiSource {
 	static _tableView_getEntryPropTransform ({mon, fnGet}) {
 		const fnGetSpellTraits = Renderer.monster.getSpellcastingRenderedTraits.bind(Renderer.monster, Renderer.get());
 		const allEntries = fnGet(mon, {fnGetSpellTraits});
-		return (allEntries || []).map(it => it.rendered || Renderer.get().render(it, 2)).join("");
+		return (allEntries || []).map(it => it.rendered || Renderer.get().render(it, 2)).join("\n");
 	}
 
 	constructor () {
@@ -300,6 +306,7 @@ class BestiaryPage extends ListPageMultiSource {
 
 			bookViewOptions: {
 				ClsBookView: BestiaryPageBookView,
+				isSublistItemsCountable: true,
 			},
 
 			tableViewOptions: {
@@ -452,7 +459,6 @@ class BestiaryPage extends ListPageMultiSource {
 						e_({
 							tag: "span",
 							clazz: `ve-col-2 ve-text-center ${Parser.sourceJsonToSourceClassname(mon.source)} pl-1 pr-0`,
-							style: Parser.sourceJsonToStylePart(mon.source),
 							title: `${Parser.sourceJsonToFull(mon.source)}${Renderer.utils.getSourceSubText(mon)}`,
 							text: source,
 						}),
@@ -470,9 +476,7 @@ class BestiaryPage extends ListPageMultiSource {
 				source,
 				type,
 				cr,
-				group: mon.group ? [mon.group].flat().join(",") : "",
-				alias: (mon.alias || []).map(it => `"${it}"`).join(","),
-				page: mon.page,
+				...ListItem.getCommonValues(mon),
 			},
 			{
 				isExcluded,
@@ -705,15 +709,15 @@ class BestiaryPage extends ListPageMultiSource {
 	) {
 		Renderer.get().setFirstSection(true);
 
-		const $btnScaleCr = !ScaleCreature.isCrInScaleRange(mon) ? null : $(`<button id="btn-scale-cr" title="Scale Creature By CR (Highly Experimental)" class="mon__btn-scale-cr ve-btn ve-btn-xs ve-btn-default ve-popwindow__hidden no-print lst-is-exporting-image__hidden"><span class="glyphicon glyphicon-signal"></span></button>`)
-			.click((evt) => {
+		const btnScaleCr = !ScaleCreature.isCrInScaleRange(mon) ? null : ee`<button id="btn-scale-cr" title="Scale Creature By CR (Highly Experimental)" class="mon__btn-scale-cr ve-btn ve-btn-xs ve-btn-default ve-popwindow__hidden no-print lst-is-exporting-image__hidden"><span class="glyphicon glyphicon-signal"></span></button>`
+			.onn("click", (evt) => {
 				evt.stopPropagation();
 				const win = (evt.view || {}).window;
 				const mon = this._dataList[Hist.lastLoadedId];
 				const lastCr = this._lastRender.entity ? this._lastRender.entity.cr.cr || this._lastRender.entity.cr : mon.cr.cr || mon.cr;
 				Renderer.monster.getCrScaleTarget({
 					win,
-					$btnScale: $btnScaleCr,
+					btnScale: btnScaleCr,
 					initialCr: lastCr,
 					cbRender: (targetCr) => {
 						if (targetCr === Parser.crToNumber(mon.cr)) this._renderStatblock(mon);
@@ -722,9 +726,9 @@ class BestiaryPage extends ListPageMultiSource {
 				});
 			});
 
-		const $btnResetScaleCr = !ScaleCreature.isCrInScaleRange(mon) ? null : $(`<button id="btn-reset-cr" title="Reset CR Scaling" class="mon__btn-reset-cr ve-btn ve-btn-xs ve-btn-default ve-popwindow__hidden no-print lst-is-exporting-image__hidden ml-2"><span class="glyphicon glyphicon-refresh"></span></button>`)
-			.click(() => Hist.setSubhash(VeCt.HASH_SCALED, null))
-			.toggle(isScaledCr);
+		const btnResetScaleCr = !ScaleCreature.isCrInScaleRange(mon) ? null : ee`<button id="btn-reset-cr" title="Reset CR Scaling" class="mon__btn-reset-cr ve-btn ve-btn-xs ve-btn-default ve-popwindow__hidden no-print lst-is-exporting-image__hidden ml-2"><span class="glyphicon glyphicon-refresh"></span></button>`
+			.onn("click", () => Hist.setSubhash(VeCt.HASH_SCALED, null))
+			.toggleVe(isScaledCr);
 
 		const selSummonSpellLevel = Renderer.monster.getSelSummonSpellLevel(mon);
 		if (selSummonSpellLevel) {
@@ -816,7 +820,7 @@ class BestiaryPage extends ListPageMultiSource {
 			Renderer.get().addPlugin("string_@dc", pluginDc);
 			Renderer.get().addPlugin("dice", pluginDice);
 
-			this._$pgContent.empty().append(RenderBestiary.$getRenderedCreature(mon, {$btnScaleCr, $btnResetScaleCr, selSummonSpellLevel, selSummonClassLevel, classLevelScalerClass: mon.summonedByClass}));
+			this._$pgContent.empty().append(RenderBestiary.$getRenderedCreature(mon, {btnScaleCr, btnResetScaleCr, selSummonSpellLevel, selSummonClassLevel, classLevelScalerClass: mon.summonedByClass}));
 		} finally {
 			Renderer.get().removePlugin("dice", pluginDice);
 			Renderer.get().removePlugin("string_@dc", pluginDc);
