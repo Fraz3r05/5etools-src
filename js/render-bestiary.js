@@ -320,6 +320,7 @@ class _RenderBestiaryImplBase {
 			srd52: mon.srd52,
 			sourceSub: mon.sourceSub,
 			otherSources: mon.otherSources,
+			referenceSources: mon.referenceSources,
 			additionalSources: mon.additionalSources,
 			externalSources: mon.externalSources,
 			reprintedAs: mon.reprintedAs,
@@ -792,22 +793,8 @@ export class RenderBestiary {
 		}
 	}
 
-	/**
-	 * @param {object} mon Creature data.
-	 * @param [opts]
-	 * @param [opts.btnScaleCr] CR scaler button.
-	 * @param [opts.btnResetScaleCr] CR scaler reset button.
-	 * @param [opts.selSummonSpellLevel] Summon spell level selector.
-	 * @param [opts.selSummonClassLevel] Summon spell level selector.
-	 * @param [opts.isSkipExcludesRender] If the "this entity is blocklisted" display should be skipped.
-	 * @param [opts.isSkipTokenRender]
-	 */
-	static $getRenderedCreature (mon, opts) {
-		return $(this.getRenderedCreature(mon, opts));
-	}
-
-	static $getRenderedLegendaryGroup (legGroup) {
-		return $$`
+	static getRenderedLegendaryGroup (legGroup) {
+		return ee`
 		${Renderer.utils.getBorderTr()}
 		${Renderer.utils.getNameTr(legGroup)}
 		<tr><td colspan="6">

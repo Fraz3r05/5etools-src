@@ -6,10 +6,11 @@ import {
 	InitiativeTrackerPlayerUiV1,
 } from "../initiativetracker/initiativetracker-player.js";
 import {DmScreenUtil} from "./dmscreen-util.js";
+import {DmScreenPanelAppBase} from "./dmscreen-panelapp-base.js";
 
 // region v1
-export class InitiativeTrackerPlayerV1 {
-	static $getPanelElement (board, state) {
+export class InitiativeTrackerPlayerV1 extends DmScreenPanelAppBase {
+	_$getPanelElement (board, state) {
 		const $meta = $(`<div class="initp__meta"></div>`).hide();
 		const $head = $(`<div class="initp__header"></div>`).hide();
 		const $rows = $(`<div class="ve-flex-col"></div>`).hide();
@@ -21,7 +22,7 @@ export class InitiativeTrackerPlayerV1 {
 		</div>`;
 
 		const view = new InitiativeTrackerPlayerMessageHandlerScreenV1();
-		view.setElements($meta, $head, $rows);
+		view.setElements(e_($meta[0]), e_($head[0]), e_($rows[0]));
 
 		let ui;
 		const $btnConnectRemote = $(`<button class="ve-btn ve-btn-primary mb-2 min-w-200p" title="Connect to a tracker outside of this browser tab.">Connect to Remote Tracker</button>`)
@@ -80,13 +81,13 @@ export class InitiativeTrackerPlayerV1 {
 
 		const $btnConnectLocal = $(`<button class="ve-btn ve-btn-primary min-w-200p">Connect to Local Tracker</button>`)
 			.click(async () => {
-				const $elesData = DmScreenUtil.$getPanelDataElements({board, type: PANEL_TYP_INITIATIVE_TRACKER});
+				const panelApps = DmScreenUtil.getPanelApps({board, type: PANEL_TYP_INITIATIVE_TRACKER});
 
-				if (!$elesData.length) return JqueryUtil.doToast({content: "No local trackers detected!", type: "warning"});
+				if (!panelApps.length) return JqueryUtil.doToast({content: "No local trackers detected!", type: "warning"});
 
-				if ($elesData.length === 1) {
+				if (panelApps.length === 1) {
 					try {
-						const token = await $elesData[0].data("pDoConnectLocalV1")(view);
+						const token = await panelApps[0].pDoConnectLocalV1();
 						ui = new InitiativeTrackerPlayerUiV1(view, "Local", token);
 						await ui.pInit();
 						InitiativeTrackerPlayerMessageHandlerScreenV1.initUnloadMessage();
@@ -101,7 +102,7 @@ export class InitiativeTrackerPlayerV1 {
 					const $selTracker = $(`<select class="form-control input-xs mr-1">
 							<option value="-1" disabled>Select a local tracker</option>
 						</select>`).change(() => $selTracker.removeClass("form-control--error"));
-					$elesData.forEach(($e, i) => $selTracker.append(`<option value="${i}">${$e.data("getSummary")()}</option>`));
+					panelApps.forEach((panelApp, i) => $selTracker.append(`<option value="${i}">${panelApp.getSummary()}</option>`));
 					$selTracker.val("-1");
 
 					const $btnOk = $(`<button class="ve-btn ve-btn-primary ve-btn-xs">OK</button>`)
@@ -112,7 +113,7 @@ export class InitiativeTrackerPlayerV1 {
 							$btnOk.prop("disabled", true);
 
 							try {
-								const token = await $elesData[Number($selTracker.val())].data("pDoConnectLocalV1")(view);
+								const token = await panelApps[Number($selTracker.val())].pDoConnectLocalV1();
 								ui = new InitiativeTrackerPlayerUiV1(view, "Local", token);
 								await ui.pInit();
 								InitiativeTrackerPlayerMessageHandlerScreenV1.initUnloadMessage();
@@ -160,10 +161,10 @@ class InitiativeTrackerPlayerMessageHandlerScreenV1 extends InitiativeTrackerPla
 		if (this._isUiInit) return;
 		this._isUiInit = true;
 
-		this._$meta.show();
-		this._$head.show();
-		this._$rows.show();
-		this._$wrpInitial.addClass("hidden");
+		this._eleMeta.showVe();
+		this._eleHead.showVe();
+		this._eleRows.showVe();
+		this._$wrpInitial.hideVe();
 	}
 
 	set $wrpInitial ($wrpInitial) { this._$wrpInitial = $wrpInitial; }
@@ -182,8 +183,8 @@ class InitiativeTrackerPlayerMessageHandlerScreenV1 extends InitiativeTrackerPla
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // region v0
-export class InitiativeTrackerPlayerV0 {
-	static $getPanelElement (board, state) {
+export class InitiativeTrackerPlayerV0 extends DmScreenPanelAppBase {
+	_$getPanelElement (board, state) {
 		const $meta = $(`<div class="initp__meta"></div>`).hide();
 		const $head = $(`<div class="initp__header"></div>`).hide();
 		const $rows = $(`<div class="ve-flex-col"></div>`).hide();
@@ -195,7 +196,7 @@ export class InitiativeTrackerPlayerV0 {
 		</div>`;
 
 		const view = new InitiativeTrackerPlayerMessageHandlerScreenV0();
-		view.setElements($meta, $head, $rows);
+		view.setElements(e_($meta[0]), e_($head[0]), e_($rows[0]));
 
 		const $btnConnectRemote = $(`<button class="ve-btn ve-btn-primary mb-2 min-w-200p" title="Connect to a tracker outside of this browser tab.">Connect to Remote Tracker</button>`)
 			.click(() => {
@@ -233,17 +234,17 @@ export class InitiativeTrackerPlayerV0 {
 					</div>
 				</div>`.appendTo(view.$wrpInitial);
 
-				const ui = new InitiativeTrackerPlayerUiV0(view, $iptServerToken, $btnGenClientToken, $iptClientToken);
+				const ui = new InitiativeTrackerPlayerUiV0(view, e_($iptServerToken[0]), e_($btnGenClientToken[0]), e_($iptClientToken[0]));
 				ui.init();
 			});
 
 		const $btnConnectLocal = $(`<button class="ve-btn ve-btn-primary min-w-200p" title="Connect to a tracker in this browser tab.">Connect to Local Tracker</button>`)
 			.click(async () => {
-				const $elesData = DmScreenUtil.$getPanelDataElements({board, type: PANEL_TYP_INITIATIVE_TRACKER});
+				const panelApps = DmScreenUtil.getPanelApps({board, type: PANEL_TYP_INITIATIVE_TRACKER});
 
-				if ($elesData.length) {
-					if ($elesData.length === 1) {
-						await $elesData[0].data("pDoConnectLocalV0")(view);
+				if (panelApps.length) {
+					if (panelApps.length === 1) {
+						await panelApps[0].pDoConnectLocalV0(view);
 					} else {
 						$btnConnectRemote.detach();
 						$btnConnectLocal.detach();
@@ -251,14 +252,14 @@ export class InitiativeTrackerPlayerV0 {
 						const $selTracker = $(`<select class="form-control input-xs mr-1">
 							<option value="-1" disabled>Select a local tracker</option>
 						</select>`).change(() => $selTracker.removeClass("error-background"));
-						$elesData.forEach(($e, i) => $selTracker.append(`<option value="${i}">${$e.data("getSummary")()}</option>`));
+						panelApps.forEach((panelApp, i) => $selTracker.append(`<option value="${i}">${panelApp.getSummary()}</option>`));
 						$selTracker.val("-1");
 
 						const $btnOk = $(`<button class="ve-btn ve-btn-primary ve-btn-xs">OK</button>`)
 							.click(async () => {
 								if ($selTracker.val() === "-1") return $selTracker.addClass("error-background");
 
-								await $elesData[Number($selTracker.val())].data("pDoConnectLocalV0")(view);
+								await panelApps[Number($selTracker.val())].pDoConnectLocalV0(view);
 
 								// restore original state
 								$btnCancel.remove(); $wrpSel.remove();
@@ -303,10 +304,10 @@ class InitiativeTrackerPlayerMessageHandlerScreenV0 extends InitiativeTrackerPla
 		if (this._isUiInit) return;
 		this._isUiInit = true;
 
-		this._$meta.show();
-		this._$head.show();
-		this._$rows.show();
-		this._$wrpInitial.addClass("hidden");
+		this._eleMeta.showVe();
+		this._eleHead.showVe();
+		this._eleRows.showVe();
+		this._$wrpInitial.hideVe();
 
 		$(window).on("beforeunload", evt => {
 			if (this._clientData.client.isActive) {

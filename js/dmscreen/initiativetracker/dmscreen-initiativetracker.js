@@ -27,6 +27,7 @@ import {
 import {InitiativeTrackerDefaultParty} from "./dmscreen-initiativetracker-defaultparty.js";
 import {ListUtilBestiary} from "../../utils-list-bestiary.js";
 
+// TODO(Future) refactor to subclass `DmScreenPanelAppBase`; move state to `_comp`
 export class InitiativeTracker extends BaseComponent {
 	constructor ({board, savedState}) {
 		super();
@@ -45,6 +46,39 @@ export class InitiativeTracker extends BaseComponent {
 		this._compDefaultParty = null;
 
 		this._creatureViewers = [];
+
+		this._doUpdateExternalStates = null;
+		this._sendStateToClientsDebounced = null;
+	}
+
+	getState () {
+		return this._getSerializedState();
+	}
+
+	async pDoConnectLocalV1 () {
+		const {token} = await this._networking.startServerV1({doUpdateExternalStates: this._doUpdateExternalStates});
+		return token;
+	}
+
+	async pDoConnectLocalV0 (clientView) {
+		await this._networking.pHandleDoConnectLocalV0({clientView});
+		this._sendStateToClientsDebounced();
+	}
+
+	getSummary () {
+		const names = this._state.rows
+			.map(({entity}) => entity.name)
+			.filter(name => name && name.trim());
+
+		return `${this._state.rows.length} creature${this._state.rows.length === 1 ? "" : "s"} ${names.length ? `(${names.slice(0, 3).join(", ")}${names.length > 3 ? "..." : ""})` : ""}`;
+	}
+
+	async pDoLoadEncounter ({entityInfos, encounterInfo}) {
+		await this._pDoLoadEncounter({entityInfos, encounterInfo});
+	}
+
+	getApi () {
+		return this;
 	}
 
 	render () {
@@ -56,10 +90,10 @@ export class InitiativeTracker extends BaseComponent {
 
 		this._render_bindSortDirHooks();
 
-		const $wrpTracker = $(`<div class="dm-init dm__panel-bg dm__data-anchor"></div>`)
+		const $wrpTracker = $(`<div class="dm-init dm__panel-bg"></div>`)
 			.on("drop", evt => this._pDoHandleImportDrop(evt.originalEvent));
 
-		const sendStateToClientsDebounced = MiscUtil.debounce(
+		this._sendStateToClientsDebounced = MiscUtil.debounce(
 			() => {
 				this._networking.sendStateToClients({fnGetToSend: this._getPlayerFriendlyState.bind(this)});
 				this._sendStateToCreatureViewers();
@@ -67,11 +101,11 @@ export class InitiativeTracker extends BaseComponent {
 			100, // long delay to avoid network spam
 		);
 
-		const doUpdateExternalStates = () => {
+		this._doUpdateExternalStates = () => {
 			this._board.doSaveStateDebounced();
-			sendStateToClientsDebounced();
+			this._sendStateToClientsDebounced();
 		};
-		this._addHookAllBase(doUpdateExternalStates);
+		this._addHookAllBase(this._doUpdateExternalStates);
 
 		this._viewRowsActive = new InitiativeTrackerRowDataViewActive({
 			comp: this,
@@ -83,30 +117,7 @@ export class InitiativeTracker extends BaseComponent {
 		this._viewRowsActiveMeta = this._viewRowsActive.getRenderedView();
 		this._viewRowsActiveMeta.$ele.appendTo($wrpTracker);
 
-		this._render_$getWrpFooter({doUpdateExternalStates}).appendTo($wrpTracker);
-
-		$wrpTracker.data("pDoConnectLocalV1", async () => {
-			const {token} = await this._networking.startServerV1({doUpdateExternalStates});
-			return token;
-		});
-
-		$wrpTracker.data("pDoConnectLocalV0", async (clientView) => {
-			await this._networking.pHandleDoConnectLocalV0({clientView});
-			sendStateToClientsDebounced();
-		});
-
-		$wrpTracker.data("getState", () => this._getSerializedState());
-		$wrpTracker.data("getSummary", () => {
-			const names = this._state.rows
-				.map(({entity}) => entity.name)
-				.filter(name => name && name.trim());
-
-			return `${this._state.rows.length} creature${this._state.rows.length === 1 ? "" : "s"} ${names.length ? `(${names.slice(0, 3).join(", ")}${names.length > 3 ? "..." : ""})` : ""}`;
-		});
-
-		$wrpTracker.data("pDoLoadEncounter", ({entityInfos, encounterInfo}) => this._pDoLoadEncounter({entityInfos, encounterInfo}));
-
-		$wrpTracker.data("getApi", () => this);
+		this._render_$getWrpFooter({doUpdateExternalStates: this._doUpdateExternalStates}).appendTo($wrpTracker);
 
 		return $wrpTracker;
 	}
@@ -401,10 +412,15 @@ export class InitiativeTracker extends BaseComponent {
 				if (isMon ? !!this._state.playerInitShowExactMonsterHp : !!this._state.playerInitShowExactPlayerHp) {
 					out.hpCurrent = entity.hpCurrent;
 					out.hpMax = entity.hpMax;
+				}
+
+				if (isNaN(entity.hpCurrent) || isNaN(entity.hpMax)) {
+					out.hpWoundLevel = -1;
 				} else {
-					out.hpWoundLevel = isNaN(entity.hpCurrent) || isNaN(entity.hpMax)
-						? -1
-						: InitiativeTrackerUtil.getWoundLevel(100 * entity.hpCurrent / entity.hpMax);
+					const pctWounded = this._state.isInvertWoundDirection
+						? 100 * (entity.hpMax - entity.hpCurrent) / entity.hpMax
+						: 100 * entity.hpCurrent / entity.hpMax;
+					out.hpWoundLevel = InitiativeTrackerUtil.getWoundLevel(pctWounded);
 				}
 
 				if (this._state.playerInitShowOrdinals && entity.isShowOrdinal) out.ordinal = entity.ordinal;
@@ -438,14 +454,16 @@ export class InitiativeTracker extends BaseComponent {
 			roller: this._roller,
 			rowStateBuilderActive: this._rowStateBuilderActive,
 
+			isInvertWoundDirection: this._state.isInvertWoundDirection,
 			importIsAddPlayers: isAddPlayers,
 			importIsRollGroups: this._state.importIsRollGroups,
 			isRollInit: this._state.isRollInit,
 			isRollHp: this._state.isRollHp,
 			isRollGroups: this._state.isRollGroups,
-		}).pGetConverted({entityInfos, encounterInfo});
+		})
+			.pGetConverted({entityInfos, encounterInfo});
 
-		const rowsFromDefaultParty = await this._compDefaultParty.pGetConvertedDefaultPartyActiveRows();
+		const rowsFromDefaultParty = await this._compDefaultParty.pGetConvertedDefaultPartyActiveRows({rowsPrev});
 		const idsDefaultParty = new Set(rowsFromDefaultParty.map(({id}) => id));
 		const rowsPrevNonDefaultParty = rowsPrev
 			.filter(({id}) => !idsDefaultParty.has(id));
@@ -627,6 +645,7 @@ export class InitiativeTracker extends BaseComponent {
 		if (this._savedState.m != null) stateNxt.isRollHp = this._savedState.m;
 		if (this._savedState.rg != null) stateNxt.isRollGroups = this._savedState.rg;
 		if (this._savedState.rri != null) stateNxt.isRerollInitiativeEachRound = this._savedState.rri;
+		if (this._savedState.wId != null) stateNxt.isInvertWoundDirection = this._savedState.wId;
 		if (this._savedState.g != null) stateNxt.importIsRollGroups = this._savedState.g;
 		if (this._savedState.p != null) stateNxt.importIsAddPlayers = this._savedState.p;
 		if (this._savedState.a != null) stateNxt.importIsAppend = this._savedState.a;
@@ -655,6 +674,7 @@ export class InitiativeTracker extends BaseComponent {
 			m: this._state.isRollHp,
 			rg: this._state.isRollGroups,
 			rri: this._state.isRerollInitiativeEachRound,
+			wId: this._state.isInvertWoundDirection,
 			g: this._state.importIsRollGroups,
 			p: this._state.importIsAddPlayers,
 			a: this._state.importIsAppend,
@@ -694,6 +714,7 @@ export class InitiativeTracker extends BaseComponent {
 			isRollHp: false,
 			isRollGroups: false,
 			isRerollInitiativeEachRound: false,
+			isInvertWoundDirection: false,
 			importIsRollGroups: true,
 			importIsAddPlayers: true,
 			importIsAppend: false,
@@ -726,7 +747,11 @@ export class InitiativeTracker extends BaseComponent {
 
 	/* -------------------------------------------- */
 
-	static $getPanelElement (board, savedState) {
-		return new this({board, savedState}).render();
+	static getPanelApp ({board, savedState}) {
+		return new this({board, savedState});
+	}
+
+	$getPanelElement () {
+		return this.render();
 	}
 }

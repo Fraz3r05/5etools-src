@@ -365,7 +365,7 @@ class TableDiceTest extends DataTesterBase {
 class AreaCheck extends DataTesterBase {
 	_headerMap = null;
 	_errorSet = new Set();
-	_fileMatcher = /\/(adventure-|book-).*\.json/;
+	_fileMatcherValid = /\/(adventure-|book-).*\.json/;
 
 	registerParsedFileCheckers (parsedJsonChecker) {
 		parsedJsonChecker.registerFileHandler(this);
@@ -375,7 +375,24 @@ class AreaCheck extends DataTesterBase {
 		this._headerMap = Renderer.adventureBook.getEntryIdLookup(data, false);
 	}
 
-	_checkString (str) {
+	_checkStringAreaNotSupported (file, str) {
+		str.replace(/{@area ([^}]*)}/g, (...m) => {
+			this._addMessage(`Unexpected @area tag: ${m[0]} in file ${file}\n`);
+			return m[0];
+		});
+	}
+
+	_handleFile_areaNotSupported (file, contents) {
+		ObjectWalker.walk({
+			obj: contents,
+			filePath: file,
+			primitiveHandlers: {
+				string: this._checkStringAreaNotSupported.bind(this, file),
+			},
+		});
+	}
+
+	_checkStringAreaSupported (str) {
 		str.replace(/{@area ([^}]*)}/g, (m0, m1) => {
 			const [, areaId] = m1.split("|");
 			if (!this._headerMap[areaId]) {
@@ -385,16 +402,14 @@ class AreaCheck extends DataTesterBase {
 		});
 	}
 
-	handleFile (file, contents) {
-		if (!this._fileMatcher.test(file)) return;
-
+	_handleFile_areaSupported (file, contents) {
 		this._errorSet = new Set();
 		this._buildMap(file, contents.data);
 		ObjectWalker.walk({
 			obj: contents,
 			filePath: file,
 			primitiveHandlers: {
-				string: this._checkString.bind(this),
+				string: this._checkStringAreaSupported.bind(this),
 			},
 		});
 
@@ -408,6 +423,47 @@ class AreaCheck extends DataTesterBase {
 		if (this._headerMap.__BAD) {
 			this._headerMap.__BAD.forEach(dupId => this._addMessage(`Duplicate ID: "${dupId}"\n`));
 		}
+	}
+
+	handleFile (file, contents) {
+		if (!this._fileMatcherValid.test(file)) return this._handleFile_areaNotSupported(file, contents);
+		return this._handleFile_areaSupported(file, contents);
+	}
+}
+
+class EntriesCheck extends DataTesterBase {
+	registerParsedFileCheckers (parsedJsonChecker) {
+		parsedJsonChecker.registerFileHandler(this);
+	}
+
+	handleFile (file, contents) {
+		const errors = [];
+
+		ObjectWalker.walk({
+			obj: contents,
+			filePath: file,
+			primitiveHandlers: {
+				object: (obj) => {
+					if (["entries", "section"].includes(obj.type) || obj.entries) {
+						if (obj.entries?.mode) return obj;
+						if (!obj.entries) return obj;
+						if (!(obj.entries instanceof Array)) return obj;
+
+						if (!obj.entries.length) errors.push(`Empty entries in "${JSON.stringify(obj)}"`);
+						return obj;
+					}
+
+					if (["list"].includes(obj.type)) {
+						if (!obj.items?.length) errors.push(`No items in list "${JSON.stringify(obj)}"`);
+						return obj;
+					}
+
+					return obj;
+				},
+			},
+		});
+
+		if (errors.length) this._addMessage(`Errors in ${file}! See below:\n${errors.map(error => `\t${error}`).join("\n")}`);
 	}
 }
 
@@ -763,6 +819,11 @@ class AdventureBookTagCheck extends DataTesterBase {
 		parsedJsonChecker.addPrimitiveHandler("string", this._checkString.bind(this));
 	}
 
+	static _ALLOWED_SUB_TAGS = new Set([
+		"@i",
+		"@b",
+	]);
+
 	_checkString (str, {filePath}) {
 		const tagSplit = Renderer.splitByTags(str);
 
@@ -775,12 +836,27 @@ class AdventureBookTagCheck extends DataTesterBase {
 				const [tag, text] = Renderer.splitFirstSpace(s.slice(1, -1));
 				if (!["@adventure", "@book"].includes(tag)) continue;
 
-				const [, id, chap] = text.toLowerCase().split("|");
+				const [displayText, id, chap] = text.toLowerCase().split("|");
 				if (!id) throw new Error(`${tag} tag had ${s} no source!`); // Should never occur
 
 				if (!this._ADV_BOOK_LOOKUP[tag.slice(1)][id]) this._addMessage(`Missing link: ${s} in file ${filePath} had unknown "${tag}" ID "${id}"\n`);
 
 				if (chap && Number(chap) < 0) this._addMessage(`Missing link: ${s} in file ${filePath} had unknown "${tag}" chapter "${chap}"\n`);
+
+				if (!displayText.includes("{@")) return;
+
+				const tagSplitSub = Renderer.splitByTags(displayText);
+				for (let j = 0; j < len; ++j) {
+					const sSub = tagSplitSub[j];
+
+					if (!sSub) continue;
+					if (!sSub.startsWith("{@")) continue;
+
+					const [tagSub] = Renderer.splitFirstSpace(sSub.slice(1, -1));
+					if (this.constructor._ALLOWED_SUB_TAGS.has(tagSub)) continue;
+
+					this._addMessage(`Link contained sub-tag "${tagSub}": ${s}\n`);
+				}
 			}
 		}
 	}
@@ -806,6 +882,7 @@ async function main () {
 		new TableDiceTest(),
 		new AdventureBookTagCheck({fileAdditional: params.fileAdditional}),
 		new AreaCheck(),
+		new EntriesCheck(),
 		new EscapeCharacterCheck(),
 		new DuplicateEntityCheck(),
 		new RefTagCheck(),

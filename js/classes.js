@@ -362,24 +362,22 @@ class ClassesPage extends MixinComponentGlobalState(MixinBaseComponent(MixinProx
 		OmnisearchUtilsUi.addScrollTopFloat();
 		const data = await DataUtil.class.loadJSON();
 
-		const $btnReset = $("#reset");
+		const iptSearch = e_(document.getElementById("lst__search"));
+		const btnReset = e_(document.getElementById("reset"));
 		this._list = this._initList({
-			$iptSearch: $("#lst__search"),
-			$wrpList: $(`.list.classes`),
-			$btnReset,
-			$btnClear: $(`#lst__search-glass`),
+			iptSearch,
+			wrpList: e_(document.getElementById("list")),
+			btnReset,
+			btnClear: e_(document.getElementById("lst__search-glass")),
 			dispPageTagline: document.getElementById(`page__subtitle`),
 			isBindFindHotkey: true,
-			optsList: {
-				isUseJquery: true,
-			},
 		});
 		SortUtil.initBtnSortHandlers(es("#filtertools"), this._list);
 
 		this._filterBox = await this._pageFilter.pInitFilterBox({
-			$iptSearch: $(`#lst__search`),
-			$wrpFormTop: $(`#filter-search-group`),
-			$btnReset,
+			iptSearch,
+			wrpFormTop: e_(document.getElementById("filter-search-group")),
+			btnReset,
 		});
 
 		this._addData(data);
@@ -393,7 +391,7 @@ class ClassesPage extends MixinComponentGlobalState(MixinBaseComponent(MixinProx
 			.then(({ManageBrewUi}) => {
 				ManageBrewUi.bindBtngroupManager(e_({id: "btngroup-manager"}));
 			});
-		this._renderListFeelingLucky({isCompact: true, $btnReset});
+		this._renderListFeelingLucky({isCompact: true, btnReset, isScrollablePage: true});
 
 		window.onhashchange = this._pHandleHashChange.bind(this);
 
@@ -407,11 +405,11 @@ class ClassesPage extends MixinComponentGlobalState(MixinBaseComponent(MixinProx
 
 		await this._pInitAndRunRender();
 
-		ListPage._checkShowAllExcluded(this._dataList, this._$pgContent);
+		ListPage._checkShowAllExcluded(this._dataList, this._$pgContent[0]);
 		this._initLinkRedirectors();
 		this._initLinkGrabbers();
 		this._initScrollToSubclassSelection();
-		this._bindLinkExportButton({$btn: $(`#btn-link-export`)});
+		this._bindLinkExportButton({btn: e_(document.getElementById("btn-link-export"))});
 		this._doBindBtnSettingsSidebar();
 
 		Hist.initialLoad = false;
@@ -850,7 +848,7 @@ class ClassesPage extends MixinComponentGlobalState(MixinBaseComponent(MixinProx
 				const href = `${window.location.href.split("#")[0]}#${this._getHashState({state: curState})}`;
 
 				await MiscUtil.pCopyTextToClipboard(href);
-				JqueryUtil.showCopiedEffect($target, "Copied link!");
+				JqueryUtil.showCopiedEffect($target, {text: "Copied link!"});
 			}
 		});
 	}
@@ -879,12 +877,12 @@ class ClassesPage extends MixinComponentGlobalState(MixinBaseComponent(MixinProx
 		const hash = UrlUtil.autoEncodeHash(cls);
 		const source = Parser.sourceJsonToAbv(cls.source);
 
-		const $lnk = $(`<a href="#${hash}" class="lst__row-border lst__row-inner">
+		const lnk = ee`<a href="#${hash}" class="lst__row-border lst__row-inner">
 			<span class="bold ve-col-8 pl-0 pr-1">${cls.name}</span>
 			<span class="ve-col-4 pl-0 pr-1 ve-text-center ${Parser.sourceJsonToSourceClassname(cls.source)} pr-0" title="${Parser.sourceJsonToFull(cls.source)}">${source}</span>
-		</a>`);
+		</a>`;
 
-		const $ele = $$`<li class="lst__row ve-flex-col ${isExcluded ? "row--blocklisted" : ""}">${$lnk}</li>`;
+		const $ele = ee`<li class="lst__row ve-flex-col ${isExcluded ? "row--blocklisted" : ""}">${lnk}</li>`;
 
 		return new ListItem(
 			clsI,
@@ -896,7 +894,7 @@ class ClassesPage extends MixinComponentGlobalState(MixinBaseComponent(MixinProx
 				page: cls.page,
 			},
 			{
-				$lnk,
+				lnk,
 				entity: cls,
 				isExcluded,
 			},
@@ -997,10 +995,10 @@ class ClassesPage extends MixinComponentGlobalState(MixinBaseComponent(MixinProx
 			// defer this for performance
 			setTimeout(() => {
 				this._list.items
-					.filter(it => it.data.$lnk)
+					.filter(it => it.data.lnk)
 					.forEach(it => {
 						const href = `#${this._getHashState({class: it.data.entity})}`;
-						it.data.$lnk.attr("href", href);
+						it.data.lnk.attr("href", href);
 					});
 			}, 5);
 		};
@@ -2382,7 +2380,7 @@ ClassesPage.SubclassComparisonBookView = class extends BookModeViewBase {
 
 		const btnSelectSubclasses = ee`<button class="ve-btn ve-btn-xs ve-btn-default bl-0 bt-0 btl-0 btr-0 bbr-0 bbl-0 h-20p" title="Select Subclasses"><span class="glyphicon glyphicon-th-list"></span></button>`
 			.onn("click", async () => {
-				const {$modal, doClose} = UiUtil.getShowModal({
+				const {eleModal, doClose} = UiUtil.getShowModal({
 					isEmpty: true,
 					isMinHeight0: true,
 					isMinWidth0: true,
@@ -2392,15 +2390,15 @@ ClassesPage.SubclassComparisonBookView = class extends BookModeViewBase {
 					},
 				});
 
-				const {$stg, fnCleanup} = this._getSelectSubclassesMeta({
+				const {stg, fnCleanup} = this._getSelectSubclassesMeta({
 					cbOnSave: () => {
 						doClose();
 					},
 					isCloseButton: false,
 				});
-				$modal
+				eleModal
 					.addClass("bkmv")
-					.append($stg);
+					.appends(stg);
 			})
 			.appendTo(out);
 
